@@ -204,18 +204,19 @@ while 1 do
 			tmpfile = os.tmpname()
 			writeinfile(tmpfile, readfile("/tmp/staticdata.json"))
 			pcall(mqttpub, CBOXPARAMS["MQTT_BROKER"][1], "", tmpfile, true)
+			os.execute("rm -f " .. tmpfile)
 
 			local result, jdata = pcall(cjson.decode, readfile("/tmp/appliance_params.json"))
 			if (appliance_connected==1) and (result == true) then
+				print("...Transmit PARAMETERS to cloud")
 
 				local jout = getStandardJson("GET APAR", jdata)
 
-				print("...Transmit PARAMETERS to cloud")
+				tmpfile = os.tmpname()
 				writeinfile(tmpfile, cjson.encode(jout))
 				pcall(mqttpub, CBOXPARAMS["MQTT_BROKER"][1], "", tmpfile, true)
+				os.execute("rm -f " .. tmpfile)
 			end
-
-			os.execute("rm -f " .. tmpfile)
 		end
 
 		-- Check if internet connection is now available
@@ -251,18 +252,6 @@ while 1 do
 			end
 		end
 	end
-
-	-- if ((FIRSTINTERNETCHECK==false) and (fsize("/tmp/staticdata.json")>0)) then
-	-- 	FIRSTINTERNETCHECK = checkInternet()
-	-- 	if (FIRSTINTERNETCHECK==true) then
-	-- 		print("...Transmit STDT to cloud")
-	-- 		tmpfile = os.tmpname()
-	-- 		writeinfile(tmpfile, readfile("/tmp/staticdata.json"))
-	-- 		mqttpub(CBOXPARAMS["MQTT_BROKER"][1], "", tmpfile, true)
-	-- 		os.execute("rm " .. tmpfile)
-	-- 	end
-	-- end
-
 
 		-- check wireless status and set leds
 		CURRENT_WMODE=trim(shell_exec("uci get wireless.@wifi-iface[0].mode"))

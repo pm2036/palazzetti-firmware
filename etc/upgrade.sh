@@ -51,7 +51,7 @@ LAN0_PROTO=`uci get network.lan.proto`
 LAN0_IPADDR=`uci get network.lan.ipaddr`
 
 if [ $LAN0_IPADDR = "192.168.0.177" ]; then
-	LAN0_PROTO="default"
+	LAN0_PROTO="dhcp"
 fi
 
 if [ $LAN0_PROTO = "static" ]; then

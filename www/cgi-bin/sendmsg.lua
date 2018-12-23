@@ -67,7 +67,7 @@ elseif (mycmd == "SET LABL") then
 end
 
 -- call sendmsg
-local ok, out = pcall(cjson.decode, shell_exec("sendmsg \"" .. mycmd .. (data:len()>0 and " " .. data or "") .. "\""))
+local ok, out = pcall(cjson.decode, shell_exec("sendmsg \"" .. mycmd .. (data:len()>0 and " " .. data or "") .. "\" 2>/dev/null"))
 
 if ok==false or out==nil then
 	out = cjson.decode("{\"INFO\":{\"RSP\":\"TIMEOUT\"}}")

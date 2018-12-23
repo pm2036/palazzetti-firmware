@@ -199,15 +199,31 @@ function getMinutes()
 end
 
 function checkInternet()
-	if shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
+
+	local pingAttempt = trim(shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null"))
+
+	-- if shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
+	if pingAttempt:len() <= 0 then
 		mutex(function() if file_exists("/tmp/staticdata.json") then exec("sed -i -e 's/\"ICONN\":0/\"ICONN\":1/g' /tmp/staticdata.json") end end, "/tmp/lockjstatic")
 		return true
 	end
+	
 	mutex(function() if file_exists("/tmp/staticdata.json") then exec("sed -i -e 's/\"ICONN\":1/\"ICONN\":0/g' /tmp/staticdata.json") end end, "/tmp/lockjstatic")
 	return false
 end
 
+function getTimezone()
+	local timezone = trim(shell_exec("wget -O - -q http://geoip.ubuntu.com/lookup | sed -n -e 's/.*<TimeZone>\\(.*\\)<\\/TimeZone>.*/\\1/p'"))
 
+	if((timezone ~= nil) and (timezone ~= "") and (timezone:find("/"))) then
+		local timezones = cjson.decode(readfile("/etc/timezone.json"))
+		timezone = timezone:gsub("_", " ")
+		writeinfile("/tmp/curr_timezone_country", timezone)
+		return ((timezones[timezone]~=nil and timezones[timezone]~="") and timezones[timezone] or false)
+	else
+		return false
+	end
+end
 
 function getERRORJson(cmd, msg, errorstr)
 	if msg==nil then msg = "" end

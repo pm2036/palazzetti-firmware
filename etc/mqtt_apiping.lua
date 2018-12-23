@@ -42,6 +42,8 @@ while 1 do
 			-- THING DISCONNECTED
 			print ("THING DISCONNECTED")
 			syslogger("APIPING", "THING DISCONNECTED")
+			-- Restart MQTT channels
+			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
 		end
 	else
 		print("apiping: offline")

@@ -27,6 +27,34 @@ if (fsize("/tmp/staticdata.json")==0) then os.exit() end
 sendmsg("GET STDT", "/dev/null")
 
 function checkClock(jdata)
+
+	-- If Internet connection available and timezone not identified (checking temporary timezone file)
+	if ((ICONN == 1) and (file_exists("/tmp/curr_timezone")==false)) then
+		-- Detect and translate timezone into OpenWRT format
+		local detectedTimezone = getTimezone()
+		vprint("Detected timezone")
+		vprint(detectedTimezone)
+		-- If timezone is valid
+		if (detectedTimezone ~= false) then 
+			-- If timezone is already present inside the file 
+			if (readfile("/etc/TZ") == detectedTimezone) then
+				vprint("Already persisted to TZ, store in RAM")
+				-- Write to temporary timezone file
+				writeinfile("/tmp/curr_timezone", detectedTimezone)
+			else
+				-- Persist to system via System Command
+				local output = cjson.decode(trim(shell_exec("lua /www/cgi-bin/syscmd.lua \"cmd=settz&tz=" .. detectedTimezone .. "\"")))
+				vprint("Persistd to Timezone")
+				-- If persist attempt is OK
+				if (output["SUCCESS"] == true) then
+					-- Write to temporary timezone file
+					vprint("Persistd to curr_timezone")
+					writeinfile("/tmp/curr_timezone", detectedTimezone)
+				end
+			end
+		end
+	end
+
 	if jdata["APLTS"] == nil then return false end
 
 	if APLCONN==1 then
@@ -48,6 +76,9 @@ function checkClock(jdata)
 	end
 end
 
+-- Wait for bridge initialization
+sleep(10)
+
 while true do
 
 	-- Check Notification File Exists and Empty Trigger Object
@@ -59,7 +90,9 @@ while true do
 	jdata = cjson.decode(readfile("/tmp/alivedata.json"))
 	if ((jdata["DATA"]==nil) or (jdata["SUCCESS"]==nil) or (jdata["SUCCESS"] == false)) then
 		mutex(function() exec("sed -i -e 's/\"APLCONN\":1/\"APLCONN\":0/g' /tmp/staticdata.json") end, "/tmp/lockjstatic")
-		os.execute("kill -9 $(pidof plzbridge)")
+		os.execute("kill -9 $(pidof plzbridge) && plzbridge &")
+		-- Wait because it doesn't reach the end of the loop
+		sleep(ALIVELOOP_SAMPLETIME)
 		break
 	end
 	-- If handshake is still running, there could be case that appliance connected status is not reliable
@@ -79,8 +112,10 @@ while true do
 
 	APLCONN=1
 
-	-- check CLOCK settings
-	checkClock(jdata["DATA"])
+	if (isTimerEnabled() == true) then
+		-- check CLOCK settings
+		checkClock(jdata["DATA"])
+	end
 
 	-- check Timer Chrono termostat
 	checkTimer(jdata["DATA"])
@@ -162,6 +197,6 @@ while true do
 
 	end
 
-	socket.sleep(ALIVELOOP_SAMPLETIME)
+	sleep(ALIVELOOP_SAMPLETIME)
 
 end

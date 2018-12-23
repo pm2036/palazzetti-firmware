@@ -14,9 +14,10 @@ local OTAUPGRADE = false
 
 
 i=0
-os.execute("kill -9 `pgrep -f mosquitto_sub`")
-os.execute("killall mosquitto_pub 2> /dev/null")
-os.execute("killall mosquitto_sub 2> /dev/null")
+-- reset all previous tasks
+os.execute("kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null")
+os.execute("killall -s 9 mosquitto_sub 2> /dev/null")
+os.execute("killall -s 9 mosquitto_pub 2> /dev/null")
 
 os.execute("rm -f " .. CBOXPARAMS["MQTT_RXFIFO"])
 os.execute("mkfifo " .. CBOXPARAMS["MQTT_RXFIFO"])
@@ -25,11 +26,6 @@ os.execute("rm -f " .. CBOXPARAMS["MQTT_TXFIFO"])
 os.execute("mkfifo " .. CBOXPARAMS["MQTT_TXFIFO"])
 
 os.execute("rm /tmp/*mqtttmp 2> /dev/null")
-
--- reset all previous tasks
-os.execute("kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null")
-os.execute("killall -s 9 mosquitto_sub 2> /dev/null")
-os.execute("killall -s 9 mosquitto_pub 2> /dev/null")
 
 -- reset main loop timer
 CBOXPARAMS["MQTT_TS_ACTIVITY"] = getTS("sec")

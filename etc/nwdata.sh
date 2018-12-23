@@ -24,7 +24,7 @@ echo -n "\"CBTYPE\":\"`ash /etc/myboard.sh`\","
 
 #verify internet connection
 OUTPUT=`wget -T 2 -q --spider http://google.com 2>/dev/null`
-if [ $? -eq 0 ]; then
+if [ ${#OUTPUT} -eq 0 ]; then
 	echo -n "\"ICONN\":1,"
 else
 	echo -n "\"ICONN\":0,"

@@ -13,8 +13,6 @@ function getOutput()
 	if (qstring==nil) then return getERRORJson("nil qstring") end
 	qstring.cmd = (qstring.cmd==nil and qstring.command or qstring.cmd):lower()
 
-	exec("echo \"" .. cjson.encode(qstring) .. "\" >> /tmp/log_lua.txt")
-
 	if (qstring.cmd==nil) then
 		return getERRORJson("nil cmd")
 	end
@@ -124,11 +122,13 @@ function getOutput()
 					signal = block:match('Signal: (-%d+)')
 					enc = block:match('Encryption: (%w+)')
 
-					if (enc=="WPA") then
-						enc = "psk"
-					elseif (enc=="WPA2") then
+					if ((enc ~= nil and enc ~= "") and enc:find("WPA2")) then
 						enc = "psk2"
-					elseif (enc=="WEP") then
+					elseif ((enc ~= nil and enc ~= "") and enc:find("mixed")) then
+						enc = "psk2"
+					elseif ((enc ~= nil and enc ~= "") and enc:find("WPA")) then
+						enc = "psk"
+					elseif ((enc ~= nil and enc ~= "") and enc:find("WEP")) then
 						enc = "wep"
 					else
 						enc = "none"
@@ -344,6 +344,12 @@ function getOutput()
 	-- -------------------------------
 	-- gettimer
 	elseif (qstring.cmd=="gettimer") then
+		local jtimer = cjson.decode(readfile("/tmp/timer.json"))
+			-- read which is the last applied program
+			jtimer["last_program"] = readfile("/tmp/timer_currentprg")
+			jtimer["curr_timezone"] = readfile("/tmp/curr_timezone")
+			jtimer["curr_timezone_country"] = readfile("/tmp/curr_timezone_country")
+
 		local jsonout = {}
 			jsonout["SUCCESS"] = true
 
@@ -353,7 +359,7 @@ function getOutput()
 			jsonout["INFO"]["RSP"] = "OK"
 
 			jsonout["DATA"] = {}
-			jsonout["DATA"]["TIMER"] = encstring(cjson.encode(cjson.decode(readfile("/tmp/timer.json"))))
+			jsonout["DATA"]["TIMER"] = encstring(cjson.encode(jtimer))
 
 			return (cjson.encode(jsonout))
 	-- -------------------------------
@@ -366,6 +372,10 @@ function getOutput()
 		local jstatic = cjson.decode(readfile("/tmp/staticdata.json"))
 		local jtimer = cjson.decode(decstring(readfile(qstring.path)))
 
+		-- Wipe read-only properties that would not be stored
+		jtimer["last_program"] = nil
+		jtimer["curr_timezone"] = nil
+		jtimer["curr_timezone_country"] = nil
 		-- Update Timer Appliance Identifier
 		jtimer["applid"] = ((jstatic~=nil and jstatic["DATA"]~=nil and jstatic["DATA"]["SPLMIN"]~=nil) and (jstatic["DATA"]["SPLMIN"] .. "_" .. jstatic["DATA"]["SPLMAX"]) or "")
 		-- Try writing to Timer RAM file
@@ -401,12 +411,28 @@ function getOutput()
 
 
 		return getOKJson(qstring.cmd, "settimer OK")
+	-- -------------------------------
+	-- settz set timezone
+	elseif (qstring.cmd=="settz") then
+		if (empty(qstring.tz)) then return getERRORJson(qstring.cmd,"empty tz") end
+		
+		writeinfile("/etc/TZ", qstring.tz)
+		shell_exec("uci set system.@system[0].timezone=\"" .. qstring.tz .. "\" && uci commit")
+		shell_exec("/etc/init.d/sysntpd restart")
 
+		return getOKJson(qstring.cmd, "update tz OK")
+		
 	-- -------------------------------
 	-- update
 	elseif (qstring.cmd=="getparams") then
 
-		return (cjson.encode(cjson.decode(readfile("/etc/cboxparams.json"))))
+		local cboxparams = cjson.decode(readfile("/etc/cboxparams.json"))
+		cboxparams["API-ENDPOINT"] = ""
+		cboxparams["API-KEY"] = ""
+		cboxparams["OTA-UPGRADE-URL"] = ""
+		cboxparams["MQTT_BROKER"] = ""
+
+		return cjson.encode(cboxparams)
 
 	-- -------------------------------
 	-- update
