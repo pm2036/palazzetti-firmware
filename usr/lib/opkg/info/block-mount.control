@@ -1,0 +1,10 @@
+Package: block-mount
+Version: 2016-07-24-addd7dc21fe99f2701c1d4708071578052af401d
+Depends: libc, ubox, libubox, libuci
+Source: package/system/fstools
+License: GPL-2.0
+Section: base
+Maintainer: John Crispin <blogic@openwrt.org>
+Architecture: ramips
+Installed-Size: 17870
+Description:  Block device mounting and checking

@@ -1,0 +1,2 @@
+/lib/modules/4.4.14/ledtrig-usbdev.ko
+/etc/modules.d/50-ledtrig-usbdev

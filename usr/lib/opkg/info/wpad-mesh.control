@@ -1,0 +1,10 @@
+Package: wpad-mesh
+Version: 2016-06-15-2
+Depends: libc, libnl-tiny, libubus, libopenssl
+Source: package/network/services/hostapd
+License: BSD-3-Clause
+Section: net
+Maintainer: Felix Fietkau <nbd@nbd.name>
+Architecture: ramips
+Installed-Size: 375487
+Description:  This package contains a minimal IEEE 802.1x/WPA Authenticator and Supplicant (with 802.11s mesh and SAE support).

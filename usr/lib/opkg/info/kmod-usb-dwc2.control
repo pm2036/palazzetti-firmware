@@ -1,0 +1,11 @@
+Package: kmod-usb-dwc2
+Version: 4.4.14-1
+Depends: kernel (=4.4.14-1-6239fc05868ea15003547d91f4f07f0e), kmod-usb-core
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips
+Installed-Size: 29575
+Description:  This driver provides USB Device Controller support for the
+ Synopsys DesignWare USB OTG Core

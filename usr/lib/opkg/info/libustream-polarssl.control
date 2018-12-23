@@ -1,0 +1,10 @@
+Package: libustream-polarssl
+Version: 2016-07-02-ec80adaa1b47f28d426fa19c692011ce60b992d6
+Depends: libc, libubox, libpolarssl
+Source: package/libs/ustream-ssl
+License: ISC
+Section: libs
+Maintainer: Felix Fietkau <nbd@nbd.name>
+Architecture: ramips
+Installed-Size: 3504
+Description:  ustream SSL Library (polarssl)

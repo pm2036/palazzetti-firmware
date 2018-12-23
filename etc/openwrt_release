@@ -1,0 +1,7 @@
+DISTRIB_ID='OpenWrt'
+DISTRIB_RELEASE='Bleeding Edge'
+DISTRIB_REVISION='unknown'
+DISTRIB_CODENAME='designated_driver'
+DISTRIB_TARGET='ramips/rt305x'
+DISTRIB_DESCRIPTION='OpenWrt Designated Driver unknown'
+DISTRIB_TAINTS='no-all busybox'

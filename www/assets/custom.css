@@ -1,0 +1,285 @@
+.ledcontainer {
+	float: left;
+	width: 30px;
+	text-align: center;
+	font-size: 0.8em;
+	margin: 0px 0px 10px 0px;
+
+}
+
+.led  {
+    margin-top: 5px;
+    width: 15px;
+    height: 15px;
+	display: inline-block;
+}
+
+.led-red {
+    background-color: red;
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 7px 1px, inset #600 0 -1px 3px, #F00 0 2px 12px;
+}
+
+.led-green {
+    background-color: lightgreen;
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 7px 1px, inset #060 0 -1px 3px, #0F0 0 2px 12px;
+}
+
+.led-yellow {
+    background-color: yellow;
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 7px 1px, inset #660 0 -1px 3px, #DD0 0 2px 12px;
+}
+
+.led-off {
+	border-radius: 50%;
+	box-shadow: #000 0 -1px 1px -1px, inset #000 0 -1px 3px, #000 0 0px 2px
+}
+
+.ui-content {
+	background: white; /* For browsers that do not support gradients */
+	background: -webkit-linear-gradient(left top, white, #ffedef); /* For Safari 5.1 to 6.0 */
+	background: -o-linear-gradient(bottom right, white, #ffedef); /* For Opera 11.1 to 12.0 */
+	background: -moz-linear-gradient(bottom right, white, #ffedef); /* For Firefox 3.6 to 15 */
+	background: linear-gradient(to bottom right, white, #ffedef); /* Standard syntax */
+}
+
+#btMenu {
+	background-color: transparent;
+	border: none;
+	color: black;
+}
+
+.custom-corners .ui-bar {
+  margin-top: 1.8em;
+  margin-left: 2em;
+  margin-right: 2em;
+  -webkit-border-top-left-radius: inherit;
+  border-top-left-radius: inherit;
+  -webkit-border-top-right-radius: inherit;
+  border-top-right-radius: inherit;
+}
+.custom-corners .ui-body {
+  border-top-width: 0;
+
+  margin-left: 2em;
+  margin-right: 2em;
+  -webkit-border-bottom-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+  -webkit-border-bottom-right-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+.custom-corners .ui-body .ui-grid-a .ui-block-a {
+	margin-top: 0.3em;
+}
+
+.custom-corners .ui-body .ui-grid-a .ui-block-b {
+	margin-top: 0.3em;
+}
+
+.logo {
+	height: 42px;
+	left: 42px;
+	position: relative;
+	top: 1px;
+	cursor: pointer;
+}
+.ui-header { height: 44px; }
+.ui-icon-bars { width: 34px; height: 34px }
+#maincontent {
+	top: 49px;
+	right: 0;
+	left: 0px;
+	position: absolute;
+	bottom: 0px;
+}
+
+.mygrid.ui-grid-a .ui-block-b { width: 25%; min-width: 8em;}
+/* Inherits mobile styles, but floats containers to make columns */
+@media all and (min-width: 850px){
+        #pnMenu {
+			visibility: visible;
+			position: relative;
+			left: 0;
+			top: 93px;
+			clip: initial;
+			float: left;
+			width: 286px;
+
+			-webkit-transition: none !important;
+			-moz-transition: none !important;
+			transition: none !important;
+			-webkit-transform: none !important;
+			-moz-transform: none !important;
+			transform: none !important;
+			/*-webkit-box-shadow: none;
+			-moz-box-shadow: none;
+			box-shadow: none;
+			*/
+        }
+
+		.logo {
+			height: 84px;
+			position: absolute;
+			left: 54px;
+			top: 4px;
+		}
+
+        #btMenu {
+            display: none;
+        }
+
+        #maincontent {
+            top: 93px;
+			right: 0;
+			left: 288px;
+			position: absolute;
+			bottom: 0px;
+        }
+		.ui-panel-closed { width:30em; }
+		.ui-header { height: 88px; }
+
+		.mygrid { max-width: 600px; }
+
+}
+
+h1, h2 {
+	font-weight: normal;
+}
+
+.ui-page .ui-header {
+    border-top: 4px solid #e10f21;
+}
+
+.ui-page .ui-header {
+    background: white !important;
+}
+
+.isfield {
+	float: right;
+}
+
+.icoCheck {
+	display: none;
+	border-radius: 25px;
+	float: right;
+	height: 1.5em;
+	width: 1.5em;
+	background: #df7b08 url("../themes/images/icons_png/check_white.png") center center no-repeat;
+/*
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+*/
+}
+
+.bit {
+	display: inline;
+	border: 1px solid black;
+	margin: 1px;
+	width: 1em;
+	height: 1em;
+	text-align: center;
+	vertical-align: middle;
+	background-color: #df7b08;
+	color: white;
+}
+
+.ui-icon-myicon:after {
+    background-image: url(../_assets/img/glyphish-icons/21-skull.png);
+    /* Make your icon fit */
+    background-size: 18px 18px;
+}
+
+ul.ulalternate li:nth-child(even) a {
+	background: white;
+}
+
+.clCsvFile { padding-top: 0.8em; }
+
+
+
+.ui-disabled {
+	opacity: 0.7;
+}
+
+.mygrid.ui-grid-a .ui-block-b .ui-bar-b {
+	text-align: right;
+	background-color: #B10515;
+}
+
+.outputleds {
+	min-width: 15em;
+	clear: both;
+}
+
+.ui-slider, .ui-select, .ui-input-text {
+	max-width: 30em;
+}
+
+.ui-input-text .clNumber {
+	text-align: right;
+	max-width: 30em;
+}
+
+
+.ui-input-text .clParam {
+	text-align: right;
+	max-width: 5em;
+}
+
+
+td > .ui-input-text {
+	max-width: 5em;
+	text-align: right;
+}
+
+
+.ui-table th, .ui-table td {
+	padding: 2px 2px;
+	vertical-align: middle;
+}
+
+.ui-input-text, .ui-input-search {
+	margin: 0;
+}
+
+td > .ui-input-text {
+	float: left;
+}
+.ui-table-reflow td .ui-table-cell-label, .ui-table-reflow th .ui-table-cell-label {
+	float: left;
+}
+
+.mypopup {
+	padding: 1em 2em 1em 2em;
+	background-color: white;
+}
+
+.version, span.reading {
+    position: absolute;
+    right: 0;
+    color: lightgray;
+    font-style: italic;
+	text-shadow: none;
+	font-weight: normal;
+	font-size:0.9em;
+}
+
+.ui-btn.my-tooltip-btn,
+.ui-btn.my-tooltip-btn:hover,
+.ui-btn.my-tooltip-btn:active {
+    background: white;
+    border: 0;
+}
+
+.countdown {
+	font-weight: bold;
+}
+
+.cellRight {
+	text-align: right;
+}

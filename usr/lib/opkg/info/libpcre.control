@@ -1,0 +1,11 @@
+Package: libpcre
+Version: 8.42-1
+Depends: libc
+Source: feeds/packages/libs/pcre
+License: BSD-3-Clause
+LicenseFiles: LICENCE
+Section: libs
+Maintainer: Thomas Heil <heil@terminal-consulting.de>
+Architecture: ramips
+Installed-Size: 73268
+Description:  A Perl Compatible Regular Expression library

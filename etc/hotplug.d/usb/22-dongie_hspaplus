@@ -1,0 +1,146 @@
+#!/bin/sh
+
+if [ "${ACTION}" = "add" ]; then
+
+	logger -t DEBUG ADDED device
+
+	RES=`lsusb -v`
+	DEV=""
+
+	if [ `echo "$RES" | grep bInterfaceClass | grep -v Hub | grep "CDC" | wc -l`  -gt 0 ]; then
+			# CDC Device!
+			DEV="cdc"
+			logger -t DEBUG device $DEV!
+
+	elif [ `echo "$RES" | grep iProduct | grep -i "USB uart\|USB-Serial\|Serial" | wc -l` -gt 0 ]; then
+			# Serial device!
+			DEV="serial"
+			logger -t DEBUG device $DEV!
+
+	elif [ `echo "$RES" | grep bInterfaceClass | grep -v Hub | grep -i "Vendor Specific Class" | wc -l` -gt 0 ]; then
+			# 3G modem Device!
+			DEV="3gmodem"
+			logger -t DEBUG device $DEV!
+
+	elif [ `echo "$RES" | grep bInterfaceClass | grep -i "Mass Storage\|Disk" | wc -l`  -eq 1 ]; then
+			# Mass Storage Device!
+			DEV="msd"
+			logger -t DEBUG device $DEV!
+	else
+			# Unknown device
+			DEV="unknown"
+			logger -t DEBUG device $DEV!
+	fi
+
+
+	logger -t DEBUG device $DEV!
+
+	if [ $DEV = "cdc" ]; then
+		logger -t DEBUG CDC device FOUND!
+
+		# set wan for serial device
+		uci del network.wan.service
+		uci del network.wan.apn
+		uci del network.wan.device
+
+		uci set network.wan.ifname='eth1'
+		uci set network.wan.proto='dhcp'
+		uci set network.wan.defaultroute='1'
+		uci set network.wan.disabled='0'
+		uci set network.wan.gateway='192.168.1.1'
+		uci commit network
+
+		/etc/init.d/network reload
+		/etc/init.d/firewall reload
+
+	elif [ $DEV = "3gmodem" ]; then
+
+		# set wan for 3g modem
+		logger -t DEBUG set wan for serial device
+
+		uci del network.wan.gateway
+
+		uci set network.wan.ifname='ppp0'
+		uci set network.wan.proto='3g'
+		uci set network.wan.service='umts'
+		uci set network.wan.defaultroute='1'
+		uci set network.wan.apn='ibox.tim.it'
+		uci set network.wan.device='auto'
+		uci set network.wan.disabled='0'
+		uci commit network
+
+		DEV = `uci get network.wan.device`
+		logger -t DEBUG `uci get network.wan.device`
+		if [ "`uci get network.wan.device`" =  "auto" ]; then
+			logger -t DEBUG "change device from auto->ttyUSB0"
+			uci set network.wan.device=/dev/ttyUSB0
+		fi
+
+		# ZTE MF636
+		DONGIEHSPAPLUS_PRODID="19d2/37/0"
+		if [ "${PRODUCT}" = "${DONGIEHSPAPLUS_PRODID}" ]; then
+			logger -t DEBUG "ZTE MF636/ONDA ET503HSA added"
+			uci set network.wan.device=/dev/ttyUSB2
+		fi
+
+		# ZTE MF632
+		DONGIEHSPAPLUS_PRODID="19d2/2/0"
+		if [ "${PRODUCT}" = "${DONGIEHSPAPLUS_PRODID}" ]; then
+			logger -t DEBUG "ZTE MF632/ONDA ET502HS added"
+			uci set network.wan.device=/dev/ttyUSB2
+		fi
+
+		# ZTE MSM K4505-Z
+		DONGIEHSPAPLUS_PRODID="19d2/104/0"
+		if [ "${PRODUCT}" = "${DONGIEHSPAPLUS_PRODID}" ]; then
+			logger -t DEBUG "ZTE MSM K4505-Z added"
+			uci set network.wan.device=/dev/ttyUSB3
+		fi
+
+		# HAUWEI K4510H
+		DONGIEHSPAPLUS_PRODID="12d1/14cb/0"
+		if [ "${PRODUCT}" = "${DONGIEHSPAPLUS_PRODID}" ]; then
+
+			logger -t DEBUG HAUWEI K4510H
+			uci set network.wan.device=/dev/ttyUSB2
+		fi
+
+		# HAUWEI  E173s
+		DONGIEHSPAPLUS_PRODID="12d1/1c05/0"
+		if [ "${PRODUCT}" = "${DONGIEHSPAPLUS_PRODID}" ]; then
+			logger -t DEBUG "HAUWEI E173s added"
+		fi
+
+		uci commit network
+		/etc/init.d/network reload
+		/etc/init.d/firewall reload
+
+	else
+
+		#all others USB devices
+		logger -t DEBUG others USB devices
+		if [ `uci get network.wan.disabled` -eq 0 ]; then
+			logger -t DEBUG network.wan.disabled='1'
+			uci set network.wan.disabled='1'
+			uci commit network
+
+			/etc/init.d/network reload
+			/etc/init.d/firewall reload
+		fi
+
+
+	fi
+
+else
+	if [ `uci get network.wan.disabled` -eq 0 ]; then
+		logger -t DEBUG network.wan.disabled='1'
+		uci set network.wan.disabled='1'
+		uci commit network
+
+		/etc/init.d/network reload
+		/etc/init.d/firewall reload
+	fi
+
+	# kill logger process
+	kill `ps | grep [/etc/log]ger | awk '{print $1}' | head -n1`
+fi

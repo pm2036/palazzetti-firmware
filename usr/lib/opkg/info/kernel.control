@@ -1,0 +1,10 @@
+Package: kernel
+Version: 4.4.14-1-6239fc05868ea15003547d91f4f07f0e
+Depends: libc
+Source: package/kernel/linux
+License: GPLv2
+Section: sys
+Status: unknown hold not-installed
+Architecture: ramips
+Installed-Size: 105
+Description:  Virtual kernel package

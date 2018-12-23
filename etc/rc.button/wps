@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ "${ACTION}" = "pressed" ]
+then
+	swconfig dev rt305x port 4 set led 10 && swconfig dev rt305x set apply
+	logger -t SYSLOG WPSBTN "$BUTTON pressed"
+	exit 0
+fi
+
+if [ "${ACTION}" = "released" ]
+then
+	swconfig dev rt305x port 4 set led 12 && swconfig dev rt305x set apply
+	logger -t SYSLOG WPSBTN "$BUTTON released"
+fi
+
+. /lib/functions.sh
+
+logger -t SYSLOG WPSBTN "$BUTTON pressed for $SEEN seconds"
+
+if [ "$SEEN" -ge 1 ]
+then
+	swconfig dev rt305x port 4 set led 10 && swconfig dev rt305x set apply
+	logger -t SYSLOG WPSBTN "Reset network settings"
+	ash /etc/resetall.sh
+fi

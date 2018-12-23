@@ -1,0 +1,15 @@
+Package: mosquitto-client-ssl
+Version: 1.5-3
+Depends: libc, librt, libuuid, libcares, libmosquitto-ssl
+Provides: mosquitto-client
+Source: feeds/packages/net/mosquitto
+License: BSD-3-Clause
+LicenseFiles: LICENSE.txt
+Section: net
+Require-User: mosquitto=200:mosquitto=200
+Maintainer: Karl Palsson <karlp@etactica.com>
+Architecture: ramips
+Installed-Size: 17441
+Description:  Command line client tools for publishing messages to MQTT servers
+ and subscribing to topics.
+ This package is built with SSL support
