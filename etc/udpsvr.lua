@@ -20,38 +20,27 @@ while running do
     if data then
 
 		if data == (CBOXPARAMS["BRANDPREFIX"] .. "bridge?") then
-			-- risponde alla richiesta
-			-- print(data)
-			--[[
-			local f = assert(io.open("/etc/macaddr", "r"))
-			local payload = f:read("*all")
-			payload = CBOXPARAMS["BRANDPREFIX"] .. "-" .. payload:sub(1, (payload:len() - 1))
-			f:close()
-			--]]
 
 			-- invia dati statici
-
 			if (fsize("/tmp/staticdata.json")>0) then
 				payload = readfile("/tmp/staticdata.json")
 				jdata = cjson.decode(payload)
 				jdata['INFO']['CMD'] = "DISCOVERY"
 				-- Added on bridge to be cross-compatible with GET STDT request
-				
 				assert(udp:sendto(cjson.encode(jdata), msg_or_ip, port_or_nil))
 			end
-			-- Send response to UDP request only when static data are available
-			-- In case of Debug, Cbox won't response if staticdata.json file is not present
-			-- So, we have to invite customer to make a reset of the Cbox and connect to it
-			-- On the default Ethernet debug address
-			-- else
-			-- 	jdata = {}
-			-- 	jdata['INFO'] = {}
-			-- 	jdata['DATA'] = {}
-			-- 	jdata['INFO']['CMD'] = "DISCOVERY"
-			-- 	jdata['DATA']['MAC'] = CBOXPARAMS["MAC"]
-			-- end
 
-			-- assert(udp:sendto(cjson.encode(jdata), msg_or_ip, port_or_nil))
+		elseif data == (CBOXPARAMS["BRANDPREFIX"] .. "bridge?GET ALLS") then
+
+			-- invia dati dinamici
+			if (fsize("/tmp/alivedata.json")>0) then
+				payload = readfile("/tmp/alivedata.json")
+				jdata = cjson.decode(payload)
+				jdata['INFO']['CMD'] = "GET ALLS"
+				-- Added on bridge to be cross-compatible with GET ALLS request
+				assert(udp:sendto(cjson.encode(jdata), msg_or_ip, port_or_nil))
+			end
+
 		end
     end
     socket.sleep(0.1)

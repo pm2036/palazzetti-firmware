@@ -12,6 +12,7 @@ local WLAN0_MODE=""
 local WLAN0_ISDISABLE=""
 local CURRENT_WMODE=""
 local CURRENT_WSTATUS=""
+local CURRENT_WPROTO=""
 local POWERLOW=""
 local INTERNETOK=""
 local FIRSTINTERNETCHECK=false
@@ -94,6 +95,13 @@ if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config
 
 	-- Shutdown leds
 	os.execute("lua /etc/leds.lua off")
+
+	CURRENT_WMODE=trim(shell_exec("uci get wireless.@wifi-iface[0].mode"))
+	CURRENT_WPROTO=trim(shell_exec("uci get network.wlan.proto"))
+
+	if ((CURRENT_WMODE ~= "ap" and CURRENT_WMODE ~= "sta") or (CURRENT_WPROTO ~= "static" and CURRENT_WPROTO ~= "dhcp")) then
+		os.execute("ash /etc/setwifi.sh default")
+	end
 
 	-- Fire reboot 
 	os.execute("reboot")
@@ -189,18 +197,22 @@ while 1 do
 		if trim(shell_exec("ifconfig wlan0 | grep \"inet addr\""))=="" then
 			-- restart wifi
 			syslogger(DEBUG, "restart wifi")
+			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
 			os.execute("wifi up")
+			sleep(3)
 			FIRSTINTERNETCHECK = false
-		elseif trim(shell_exec("uci get network.wlan.proto"))=="dhcp" and WIFILINK==1 then
+		elseif (WIFILINK==1) and (checkInternet()~=true) then
 			-- wifi interface has valid IP
 			-- ping wifi gateway
-			local _wifigateway = trim(shell_exec("route -n | grep UG | grep wlan0 | awk '{print $2}'"))
-			if _wifigateway ~= nil or _wifigateway ~= "" then
-				if (tonumber(shell_exec("echo -n $(ping -c 5 -q -w 5 " .. _wifigateway .. " | grep -E -o '[0-9]+ packets received' | cut -f1 -d' ')")) <= 2) then
-					syslogger("DEBUG", "NO_PING_WIFIGATEWAY restart wifi")
-					os.execute("wifi up")
-				end
-			end
+			-- local _wifigateway = trim(shell_exec("route -n | grep UG | grep wlan0 | awk '{print $2}'"))
+			-- if _wifigateway ~= nil or _wifigateway ~= "" then
+			-- 	if (tonumber(shell_exec("echo -n $(ping -c 5 -q -w 10 " .. _wifigateway .. " | grep -E -o '[0-9]+ packets received' | cut -f1 -d' ')")) <= 2) then
+			syslogger("DEBUG", "NO_PING_WIFIGATEWAY restart wifi")
+			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+			os.execute("wifi up")
+			sleep(3)
+			-- 	end
+			-- end
 		end
 	end
 

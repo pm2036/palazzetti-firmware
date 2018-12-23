@@ -35,7 +35,7 @@ if [ $WLAN0_MODE = "default" ]; then
 	echo "ash /etc/setwifi.sh $WLAN0_MODE" >> "/etc/upgrade_config.sh"
 else
 	WLAN0_SSID=`uci get wireless.@wifi-iface[0].ssid`
-	WLAN0_KEY=`uci get wireless.@wifi-iface[0].key`
+	WLAN0_KEY=`uci get wireless.@wifi-iface[0].key | sed -r 's/[$]+/\\$/g'` # escape special char $
 	WLAN0_ENC=`uci get wireless.@wifi-iface[].encryption`
 
 	WLAN0_IPADDR=`uci get network.wlan.ipaddr`
@@ -61,7 +61,7 @@ if [ $LAN0_PROTO = "static" ]; then
 	echo "ash /etc/seteth.sh $LAN0_PROTO $LAN0_MASK $LAN0_IPADDR $LAN0_GTW" >> "/etc/upgrade_config.sh"
 else
 	echo "ash /etc/seteth.sh $LAN0_PROTO" >> "/etc/upgrade_config.sh"
-fi 
+fi
 
 chmod +x /etc/upgrade_config.sh
 

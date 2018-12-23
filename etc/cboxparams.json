@@ -24,7 +24,7 @@
     "MQTT_VERBOSE": 0,
     "MQTT_BROKER": ["a27vh8a65qqj6p.iot.eu-west-1.amazonaws.com"],
     "MQTT_SAMPLETIME": 180,
-    "MQTT_KEEPALIVE_SUB": 180,
+    "MQTT_KEEPALIVE_SUB": 30,
     "MQTT_KEEPALIVE_PUB": 180,
     "MQTT_KEEPPERS_TIME": 169,
     "MQTT_TELEMETRY_STEPS": 20,

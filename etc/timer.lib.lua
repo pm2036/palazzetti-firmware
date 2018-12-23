@@ -7,12 +7,12 @@ function handleProgramNoMatch(jtimer, jdata)
 	local programID = "PROGRAM_NOMATCH_OFF"
 
 	-- Se ho già lanciato il comando di spegnimento almeno una volta
-	if (programID == readfile("/tmp/timer_currentprg")) then 
+	if (programID == readfile("/tmp/timer_currentprg")) then
 		-- Non lo lancio nuovamente in quanto l'utente potrebbe aver acceso la stufa manualmente
 		-- E questa deve continuare a lavorare
-		return 
+		return
 	end
-	
+
 	-- check if the logic status is not in error
 	if (	-- Spento
 			(tonumber(jdata["LSTATUS"])==0) or
@@ -28,7 +28,9 @@ function handleProgramNoMatch(jtimer, jdata)
 			(tonumber(jdata["LSTATUS"])==11) or
 			-- Attesa raffreddamento
 			(tonumber(jdata["LSTATUS"])==12) or
-			-- MF: Spento 
+			-- Ecomode
+			(tonumber(jdata["LSTATUS"])==51) or
+			-- MF: Spento
 			(tonumber(jdata["LSTATUS"])==501) or
 			-- MF: In Funzione
 			(tonumber(jdata["LSTATUS"])==504) or
@@ -74,7 +76,7 @@ function checkTimer(jdata)
 
 	local myapplid = ((jstatic~=nil and jstatic["DATA"]~=nil and jstatic["DATA"]["SPLMIN"]~=nil) and (jstatic["DATA"]["SPLMIN"] .. "_" .. jstatic["DATA"]["SPLMAX"]) or "")
 
-		if (jtimer["applid"] ~= myapplid) then
+		if ((jtimer["applid"] ~= myapplid) and (myapplid ~= "")) then
 
 			syslogger("TIMER", "Reset Appliance Identifier: " .. myapplid)
 
@@ -93,6 +95,8 @@ function checkTimer(jdata)
 			jtimer["scenarios"]["warm"]["settings"] = {}
 			jtimer["scenarios"]["off"]["settings"] = {}
 
+			-- Don't check SPLMAX and SPLMIN becase we assume that condition is already satisfied by myapplid empty check
+			
 			local newsetpoint = math.floor((tonumber(jstatic["DATA"]["SPLMAX"]) + tonumber(jstatic["DATA"]["SPLMIN"]))/2)
 			jtimer["scenarios"]["comfort"]["settings"]["SET SETP"] = newsetpoint
 			jtimer["scenarios"]["economy"]["settings"]["SET SETP"] = newsetpoint
@@ -113,7 +117,7 @@ function checkTimer(jdata)
 		if (jtimer["enabled"]==false) then return end
 
 		if ((jdata["CHRSTATUS"]~=nil) and (jdata["CHRSTATUS"] ~= 0)) then
-			-- check inside jdata for chrono key 
+			-- check inside jdata for chrono key
 			syslogger("TIMER", "SET CSST 0")
 			sendmsg("SET CSST 0")
 		end

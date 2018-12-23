@@ -200,7 +200,7 @@ end
 
 function checkInternet()
 
-	local pingAttempt = trim(shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null"))
+	local pingAttempt = trim(shell_exec("wget -q --spider -T 4 http://google.com 2>/dev/null"))
 
 	-- if shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
 	if pingAttempt:len() <= 0 then

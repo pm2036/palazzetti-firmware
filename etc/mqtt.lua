@@ -25,7 +25,7 @@ os.execute("mkfifo " .. CBOXPARAMS["MQTT_RXFIFO"])
 os.execute("rm -f " .. CBOXPARAMS["MQTT_TXFIFO"])
 os.execute("mkfifo " .. CBOXPARAMS["MQTT_TXFIFO"])
 
-os.execute("rm /tmp/*mqtttmp 2> /dev/null")
+os.execute("rm -f /tmp/*mqtttmp 2> /dev/null")
 
 -- reset main loop timer
 CBOXPARAMS["MQTT_TS_ACTIVITY"] = getTS("sec")

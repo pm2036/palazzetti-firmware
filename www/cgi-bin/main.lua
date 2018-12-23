@@ -50,7 +50,7 @@ out = [[
 		<div id="maincontent" data-role="content" data-theme="a">
 ]]
 
-out = out .. loadcontent("/info.lua")
+out = out .. loadcontent("/welcome.lua")
 
 out = out .. [[
 

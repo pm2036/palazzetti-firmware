@@ -283,11 +283,14 @@ do
 		echo "wifi down && wifi up" >> /tmp/apply_netconfig.sh
 
 		# Store information for client connection
+
+		KEY=`echo $4 | sed -r 's/[$]+/\\$/g'` #escape special char $ in key
+
 		if [ "$5" = "dhcp" ]
 		then
-			echo "ash /etc/setwifi.sh sta \"$2\" \"$3\" \"$4\" $5" >> /tmp/apply_netconfig.sh
+			echo "ash /etc/setwifi.sh sta \"$2\" \"$3\" \"$KEY\" $5" >> /tmp/apply_netconfig.sh
 		else
-			echo "ash /etc/setwifi.sh sta \"$2\" \"$3\" \"$4\" $5 $6 $7 $8" >> /tmp/apply_netconfig.sh
+			echo "ash /etc/setwifi.sh sta \"$2\" \"$3\" \"$KEY\" $5 $6 $7 $8" >> /tmp/apply_netconfig.sh
 		fi
 
 		# Disable unusued network interface
