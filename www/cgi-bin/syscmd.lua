@@ -200,8 +200,10 @@ function getOutput()
 			local row = getTS() .. ";"
 			local title = "timestamp;"
 			for k,v in pairs(out.DATA) do
-				title = title .. k .. ";"
-				row = row .. v .. ";"
+				if type(v) ~= "table" then
+					title = title .. k .. ";"
+					row = row .. v .. ";"
+				end
 			end
 
 			-- check if is splitperiod
@@ -247,8 +249,10 @@ function getOutput()
 			if (out.DATA==nil) then return "" end
 
 			for k,v in pairs(out.DATA) do
-				title = title .. k .. ";"
-				row = row .. v .. ";"
+				if type(v) ~= "table" then
+					title = title .. k .. ";"
+					row = row .. v .. ";"
+				end
 			end
 
 			-- check if is splitperiod
@@ -393,7 +397,7 @@ function getOutput()
 
 		if (jstatic~=nil and jstatic["DATA"]~=nil and jstatic["DATA"]["ICONN"]~=nil) then
 			-- Internet Connection not available
-			if(jstatic["DATA"]["ICONN"] == 0) and (jtimer["last_edit"]~=nil) and (jtimer["last_edit"]~="") then 
+			if(jstatic["DATA"]["ICONN"] == 0) and (jtimer["last_edit"]~=nil) and (jtimer["last_edit"]~="") then
 				-- Set date as last edit date and transfer time to appliance
 				shell_exec("date -s '" .. jtimer["last_edit"]:gsub("T", " ") .. "'")
 				sendmsg("SET TIME")
@@ -415,13 +419,13 @@ function getOutput()
 	-- settz set timezone
 	elseif (qstring.cmd=="settz") then
 		if (empty(qstring.tz)) then return getERRORJson(qstring.cmd,"empty tz") end
-		
+
 		writeinfile("/etc/TZ", qstring.tz)
 		shell_exec("uci set system.@system[0].timezone=\"" .. qstring.tz .. "\" && uci commit")
 		shell_exec("/etc/init.d/sysntpd restart")
 
 		return getOKJson(qstring.cmd, "update tz OK")
-		
+
 	-- -------------------------------
 	-- update
 	elseif (qstring.cmd=="getparams") then

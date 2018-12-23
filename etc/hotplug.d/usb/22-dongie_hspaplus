@@ -26,6 +26,11 @@ if [ "${ACTION}" = "add" ]; then
 			# Mass Storage Device!
 			DEV="msd"
 			logger -t DEBUG device $DEV!
+			# start automatically logger process!
+			logger -t DEBUG start automatically syslogger process
+			curl -sk http://localhost/cgi-bin/syscmd.lua?cmd=startlogger
+
+
 	else
 			# Unknown device
 			DEV="unknown"

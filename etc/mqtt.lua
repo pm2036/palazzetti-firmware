@@ -3,7 +3,7 @@
 dofile "/etc/main.lib.lua"
 dofile "/etc/param.lib.lua"
 
-local f, f2, cmd, output, completecmd, fifoloop, startTime, filename
+local f, f2, cmd, output, completecmd, fifoloop, startTime, filename, filename_hash
 
 local url
 local words = {}
@@ -217,6 +217,7 @@ while true do
 						OTAUPGRADE = true
 
 						filename = "firmware.bin"
+						filename_hash = "firmware.md5"
 
 						local remotefilename=trim(shell_exec("ash /etc/myboard.sh"))
 						if remotefilename=="miniembplug" or remotefilename=="omni-plug" then
@@ -227,8 +228,12 @@ while true do
 
 						-- Cleanup previous Firmware
 						os.execute("rm -f /tmp/".. filename)
+						-- Cleanup previous MD5 Firmware
+						os.execute("rm -f /tmp/".. filename_hash)
 						-- Download new Firwmare
 						os.execute("wget --ca-certificate=/etc/cacerts.pem -O /tmp/".. filename .. " " .. ((url~=nil and url~="") and trim(url) or CBOXPARAMS["OTA-UPGRADE-URL"]) .. "_".. remotefilename ..".bin 2>/dev/null")
+						-- Download new Firmware Content Hash for Validation
+						os.execute("wget --ca-certificate=/etc/cacerts.pem -O /tmp/".. filename_hash .. " " .. ((url~=nil and url~="") and trim(url) or CBOXPARAMS["OTA-UPGRADE-URL"]) .. "_".. remotefilename ..".md5 2>/dev/null")
 
 						if (file_exists("/tmp/" .. filename)) then
 

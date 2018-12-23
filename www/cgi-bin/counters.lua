@@ -16,7 +16,7 @@ out = [[
 			<div class="ui-body ui-body-a">
 				<div class="ui-grid-a" data-mini="true">
 					<div class="ui-block-a">Quantity of Pellet [kg]</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['PQT'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['PQT']~=nil and jdata['DATA']['PQT'] or "-") .. [[</div>
 				</div><!-- /grid-a -->
 			</div>
 		</div>
@@ -28,7 +28,7 @@ out = [[
 			<div class="ui-body ui-body-a">
 				<div class="ui-grid-a" data-mini="true">
 					<div class="ui-block-a">Number of ignitions</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['IGN'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['IGN']~=nil and jdata['DATA']['IGN'] or "-") .. [[</div>
 				</div><!-- /grid-a -->
 			</div>
 		</div>
@@ -40,13 +40,13 @@ out = [[
 			<div class="ui-body ui-body-a">
 				<div class="ui-grid-a" data-mini="true">
 					<div class="ui-block-a">Power time</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['POWERTIME'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['POWERTIME']~=nil and jdata['DATA']['POWERTIME'] or "-") .. [[</div>
 					<div class="ui-block-a">Heat time</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['HEATTIME'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['HEATTIME']~=nil and jdata['DATA']['HEATTIME'] or "-") .. [[</div>
 					<div class="ui-block-a">Service time</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['SERVICETIME'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['SERVICETIME']~=nil and jdata['DATA']['SERVICETIME'] or "-") .. [[</div>
 					<div class="ui-block-a">ON time</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['ONTIME'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['ONTIME']~=nil and jdata['DATA']['ONTIME'] or "-") .. [[</div>
 				</div><!-- /grid-a -->
 			</div>
 		</div>
@@ -58,9 +58,9 @@ out = [[
 			<div class="ui-body ui-body-a">
 				<div class="ui-grid-a" data-mini="true">
 					<div class="ui-block-a">Overtemperature Errors</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['OVERTMPERRORS'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['OVERTMPERRORS']~=nil and jdata['DATA']['OVERTMPERRORS'] or "-") .. [[</div>
 					<div class="ui-block-a">Ignition Errors</div>
-					<div class="ui-block-b cellRight">]] .. jdata['DATA']['IGNERRORS'] .. [[</div>
+					<div class="ui-block-b cellRight">]] .. (jdata['DATA']['IGNERRORS']~=nil and jdata['DATA']['IGNERRORS'] or "-") .. [[</div>
 				</div><!-- /grid-a -->
 			</div>
 		</div>

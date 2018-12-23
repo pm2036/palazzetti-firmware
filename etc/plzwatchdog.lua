@@ -57,27 +57,49 @@ if FIRSTBOOT==1 then
 		os.execute("rm /etc/uhttpd.*")
 		os.execute("uci set uhttpd.main.redirect_https=0 && uci commit uhttpd && /etc/init.d/uhttpd restart")
 	end
-	os.execute("ash /etc/setwifi.sh default")
+
+	-- Set Wi-Fi to default mode only if upgrade configuration is missing
+	if (file_exists("/etc/upgrade_config.sh") == false) then
+		os.execute("ash /etc/setwifi.sh default")
+	end
+
 	os.execute("cat /etc/macaddr > /etc/appliancelabel")
 	os.execute("echo 0 > /sys/bus/usb/devices/usb1/authorized && echo 1 > /sys/bus/usb/devices/usb1/authorized")
 end
+	
+if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config.sh")>0) then
 
-if FIRSTBOOT==1 then
 	syslogger(DEBUG, "FIRSTBOOT. Restore previous configurations..")
-	if file_exists("/etc/upgrade_config.sh")==true then
-		os.execute("chmod +x /etc/upgrade_config.sh")
-		os.execute("ash /etc/upgrade_config.sh")
-		os.execute("rm -f /etc/upgrade_config.sh")
+	-- Make led blinking
+	os.execute("swconfig dev rt305x port 4 set led 10")
+	os.execute("swconfig dev rt305x set apply")
 
-		-- If label is still empty
-		-- It couldn't be recovered
-		if ((file_exists("/etc/appliancelabel") ~= true) or (fsize("/etc/appliancelabel") <= 0)) then
-			os.execute("cat /etc/macaddr > /etc/appliancelabel")
-		end
+	-- Set executable permission on restore configuration file
+	os.execute("chmod +x /etc/upgrade_config.sh")
+	
+	-- Wait 5 seconds for services boot
+	sleep(5)
 
-		os.execute("lua /etc/leds.lua off")
-		os.execute("reboot")
+	-- Execute the configuration restore
+	os.execute("ash /etc/upgrade_config.sh")
+
+	-- Clear the upgrade configuration
+	os.execute("rm -f /etc/upgrade_config.sh")
+
+	-- If label is still empty
+	-- It couldn't be recovered
+	if ((file_exists("/etc/appliancelabel") ~= true) or (fsize("/etc/appliancelabel") <= 0)) then
+		os.execute("cat /etc/macaddr > /etc/appliancelabel")
 	end
+
+	-- Shutdown leds
+	os.execute("lua /etc/leds.lua off")
+
+	-- Fire reboot 
+	os.execute("reboot")
+
+	-- Stop Watchdog
+	os.exit()
 end
 
 os.execute("lua /etc/leds.lua off")
@@ -174,7 +196,7 @@ while 1 do
 			-- ping wifi gateway
 			local _wifigateway = trim(shell_exec("route -n | grep UG | grep wlan0 | awk '{print $2}'"))
 			if _wifigateway ~= nil or _wifigateway ~= "" then
-				if tonumber(shell_exec("ping -c 2 -q -w 2 " .. _wifigateway .. " | grep \"100%\" >/dev/null; if [ $? -eq 0 ]; then echo -n \"0\"; else echo -n \"1\"; fi")) == 0 then
+				if (tonumber(shell_exec("echo -n $(ping -c 5 -q -w 5 " .. _wifigateway .. " | grep -E -o '[0-9]+ packets received' | cut -f1 -d' ')")) <= 2) then
 					syslogger("DEBUG", "NO_PING_WIFIGATEWAY restart wifi")
 					os.execute("wifi up")
 				end

@@ -175,10 +175,18 @@ fi
 # remove bridge between wan
 uci delete network.wlan.type
 
+# save changes
 uci commit
+
+# Exit if restoring Upgrade configuration exists
+if [ -e /etc/upgrade_config.sh ]; then
+	exit 0
+fi
+
+# restart network services
 /etc/init.d/network reload
 
-#reset wifi
+# reset wifi
 wifi down && wifi up
 
 # cleanup temporary apply file

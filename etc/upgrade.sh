@@ -42,7 +42,7 @@ else
 	WLAN0_MASK=`uci get network.wlan.netmask`
 	WLAN0_GTW=`uci get network.wlan.gateway`
 
-	echo "ash /etc/setwifi.sh $WLAN0_MODE $WLAN0_SSID $WLAN0_ENC $WLAN0_KEY $WLAN0_PROTO $WLAN0_IPADDR $WLAN0_MASK $WLAN0_GTW" >> "/etc/upgrade_config.sh"
+	echo "ash /etc/setwifi.sh \"$WLAN0_MODE\" \"$WLAN0_SSID\" \"$WLAN0_ENC\" \"$WLAN0_KEY\" $WLAN0_PROTO $WLAN0_IPADDR $WLAN0_MASK $WLAN0_GTW" >> "/etc/upgrade_config.sh"
 fi
 
 # Save Ethernet Network Configurations
@@ -73,9 +73,30 @@ FILE=/etc/sysupgrade.conf
 grep -qF -- "$TIMER_LINE" "$FILE" || echo "$TIMER_LINE" >> "$FILE"
 grep -qF -- "$UPGRADE_LINE" "$FILE" || echo "$UPGRADE_LINE" >> "$FILE"
 
+if [ ! -f /tmp/firmware.md5 ] || [ ! -f /tmp/firmware.bin ]; then
+	# Clean temporary upgrade configuration file
+	rm -f /etc/upgrade_config.sh
+	# Restart service
+	/etc/init.d/plzwatchdog start
+	echo ERROR: /tmp/firmware.md5 or /tmp/firmware.bin not exists
+	exit 1
+fi
+
+if [ "$(md5sum /tmp/firmware.bin | cut -d' ' -f 1 | xargs)" != "$(cat /tmp/firmware.md5)" ]; then
+    # Clean temporary upgrade configuration file
+    rm -f /etc/upgrade_config.sh
+    # Restart service
+	/etc/init.d/plzwatchdog start
+	echo ERROR: /tmp/firmware.md5 not match with md5sum of /tmp/firmware.bin
+	exit 1
+fi
 
 TESTSYSUPGRADE=$(sysupgrade -T /tmp/firmware.bin)
-if [ -n "$TESTSYSUPGRADE" ]; then 
+if [ ! -z "$TESTSYSUPGRADE" ]; then
+	# Clean temporary upgrade configuration file
+	rm -f /etc/upgrade_config.sh
+	# Restart service
+	/etc/init.d/plzwatchdog start
 	echo ERROR: /tmp/firmware.bin is not a valid upgrade file
 	exit 1
 fi

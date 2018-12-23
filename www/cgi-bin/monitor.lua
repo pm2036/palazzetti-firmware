@@ -1,5 +1,6 @@
-json = cjson.decode(sendmsg("GET STDT")))
+json = cjson.decode(sendmsg("GET STDT"))
 jdata = json["DATA"]
+
 
 out = [[
 <script>
@@ -23,9 +24,9 @@ out = [[
 					<div class="ui-block-a">Serial number</div>
 					<div class="ui-block-b">]] .. jdata['SN'] .. [[</div>
 					<div class="ui-block-a">Pellet type</div>
-					<div class="ui-block-b">]] .. jdata['PELLETTYPE'] .. [[</div>
+					<div class="ui-block-b">]] .. (jdata['PELLETTYPE']~=nil and jdata['PELLETTYPE'] or "-") .. [[</div>
 					<div class="ui-block-a">Configuration</div>
-					<div class="ui-block-b">]] .. jdata['CONFIG'] .. [[</div>
+					<div class="ui-block-b">]] .. (jdata['CONFIG']~=nil and jdata['CONFIG'] or "-") .. [[</div>
 					<div class="ui-block-a">Nominal power</div>
 					<div class="ui-block-b">]] .. jdata['NOMINALPWR'] .. [[kW</div>
 					<div class="ui-block-a">Stove type</div>

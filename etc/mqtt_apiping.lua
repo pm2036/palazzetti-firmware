@@ -38,6 +38,15 @@ while 1 do
 				manageNotificationsUpdate(jsonrsp["DATA"]["Platform_NotificationsConfigPath"])
 			end
 
+			-- Check for eventually needs to perform another enrollment against IoT Platform
+			-- It could happened when there are policy changes or other similar stuff
+			if ((jsonrsp["DATA"]["MacAddress_NeedEnrollment"]~=nil) and (jsonrsp["DATA"]["MacAddress_NeedEnrollment"] == true)) then
+				-- Cleanup Enrollment files
+				os.execute("rm -rf aws-*")
+				-- Let the plzwatchdog Restart MQTT services
+				os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+			end
+
 		else
 			-- THING DISCONNECTED
 			print ("THING DISCONNECTED")

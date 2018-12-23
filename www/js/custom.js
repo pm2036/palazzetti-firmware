@@ -165,55 +165,6 @@ $.userInit = function() {
 	$(".ui-input-text").css("max-width", "4em");
 
 	$.lowLevelReq("GET ALLS", true)
-		.always(function() {
-			$.lowLevelReq("GET CHRD", true)
-				.done(function(data) {
-					$.each(data, function(key, val) {
-						if (key != "INFO") {
-							$.each(val, function(k, v) {
-								if (k.substr(0, 1) == "D") {
-									$.each(v, function(m, p) {
-										var target = $("#"+k+m);
-										var value;
-										if (p=="OFF") {
-											value = 0;
-										} else {
-											value = parseInt(p.substr(1,2));
-										}
-										target.val(value);
-										target.selectmenu("refresh");
-									})
-								} else if (k.substr(0, 1) == "P") {
-									$.each(v, function(pkey, pval) {
-										var target = $("#"+k+pkey);
-										switch (pkey) {
-											case "START":
-											case "STOP":
-												$("#"+k+pkey).val(pval);
-												break;
-											default:
-												target.val(pval);
-												break;
-										}
-
-									})
-								}
-							});
-
-						}
-					});
-				})
-				.always(function() {
-					if (($("#STATUS").text()=="OFF") || ($("#STATUS").text()=="OFF TIMER")) {
-						$("#CMDONOFF").val("OFF").flipswitch("refresh");
-					} else {
-						$("#CMDONOFF").val("ON").flipswitch("refresh");
-					}
-
-					$.userInitSelImmediate();
-				});
-		});
-
 
 }
 
