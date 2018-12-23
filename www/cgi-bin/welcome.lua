@@ -5,7 +5,7 @@ out = [[
 <h1>Welcome</h1>
 
 	<a class="menulink ui-btn ui-shadow" href="#wifi" >Set WiFi</a>
-	<a class="menulink ui-btn ui-shadow" hrhref="#eth">Set Ethernet</a>
+	<a class="menulink ui-btn ui-shadow" href="#eth">Set Ethernet</a>
 	<br/>
 	<div class="ui-grid-a ui-responsive">
 		<div class="ui-block-a">

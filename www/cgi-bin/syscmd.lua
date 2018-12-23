@@ -31,6 +31,30 @@ function getOutput()
 		end
 		return (cjson.encode(jdata))
 
+	elseif (qstring.cmd=="check_applywifi") then
+		local _checkConnectionsAttempts = 5
+
+		-- Try 5 times
+		while (_checkConnectionsAttempts > 0) do
+			-- Check if no station is connected
+			if (
+				-- No client connected
+				(trim(shell_exec("iwinfo wlan0 assoclist")) == "No station connected") or
+				-- Is connected to station with virtual interface
+				(string.match((trim(shell_exec("iwinfo wlan0 info | grep \"ESSID\""))), "connbox") == nil)
+			) then
+				_checkConnectionsAttempts = -1
+			else
+				_checkConnectionsAttempts = _checkConnectionsAttempts - 1
+			end
+
+			sleep(1)
+		end
+
+		-- In case that no station is connected to the device, send the apply command
+		if (_checkConnectionsAttempts == -1) then
+			shell_exec("lua /www/cgi-bin/syscmd.lua \"cmd=applywifi\" >/dev/null 2>/dev/null")
+		end
 	-- -------------------------------
 	-- setwifi
 	elseif (qstring.cmd=="applywifi") then
@@ -354,6 +378,9 @@ function getOutput()
 			jtimer["curr_timezone"] = readfile("/tmp/curr_timezone")
 			jtimer["curr_timezone_country"] = readfile("/tmp/curr_timezone_country")
 
+			jtimer["ecostart_mode_enabled"] = ((jtimer["ecostart_mode_enabled"] == nil) and false or jtimer["ecostart_mode_enabled"])
+			jtimer["sync_clock_enabled"] = ((jtimer["sync_clock_enabled"] == nil) and true or jtimer["sync_clock_enabled"])
+
 		local jsonout = {}
 			jsonout["SUCCESS"] = true
 
@@ -399,8 +426,8 @@ function getOutput()
 			-- Internet Connection not available
 			if(jstatic["DATA"]["ICONN"] == 0) and (jtimer["last_edit"]~=nil) and (jtimer["last_edit"]~="") then
 				-- Set date as last edit date and transfer time to appliance
-				shell_exec("date -s '" .. jtimer["last_edit"]:gsub("T", " ") .. "'")
-				sendmsg("SET TIME")
+				-- shell_exec("date -s '" .. jtimer["last_edit"]:gsub("T", " ") .. "'")
+				-- sendmsg("SET TIME")
 			end
 		end
 

@@ -40,6 +40,10 @@ if FIRSTBOOT==1 then
 	os.execute("/etc/init.d/fstab restart")
 end
 
+-- reset check internet
+os.execute("rm -f /tmp/isICONN 2>/dev/null")
+
+
 local mac
 while (file_exists("/etc/macaddr") == false or fsize("/etc/macaddr")==0) and COUNT>0 do
 	os.execute("cat /sys/class/net/" .. MYETH0 .. "/address | tr '[a-z]' '[A-Z]' > /etc/macaddr")
@@ -67,7 +71,7 @@ if FIRSTBOOT==1 then
 	os.execute("cat /etc/macaddr > /etc/appliancelabel")
 	os.execute("echo 0 > /sys/bus/usb/devices/usb1/authorized && echo 1 > /sys/bus/usb/devices/usb1/authorized")
 end
-	
+
 if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config.sh")>0) then
 
 	syslogger(DEBUG, "FIRSTBOOT. Restore previous configurations..")
@@ -77,7 +81,7 @@ if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config
 
 	-- Set executable permission on restore configuration file
 	os.execute("chmod +x /etc/upgrade_config.sh")
-	
+
 	-- Wait 5 seconds for services boot
 	sleep(5)
 
@@ -103,7 +107,7 @@ if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config
 		os.execute("ash /etc/setwifi.sh default")
 	end
 
-	-- Fire reboot 
+	-- Fire reboot
 	os.execute("reboot")
 
 	-- Stop Watchdog
@@ -140,6 +144,9 @@ while 1 do
 
 	if CBOXPARAMS["MQTT_ENABLED"]==1 then
 
+		-- Ensure no zombie process alive
+		shell_exec("kill -9 `ps | grep \"sh -c mosquitto_sub\" | awk '{print $1}'` >/dev/null 2>/dev/null")
+
 		PID=shell_exec("ps | grep [mqtt].lua")
 		if PID=="" then
 			print("Restart MQTT")
@@ -167,8 +174,8 @@ while 1 do
 
 	PID=shell_exec("pidof uhttpd")
 	if PID=="" then
-			print("Restart uhttpd")
-			os.execute("/etc/init.d/uhttpd restart")
+		print("Restart uhttpd")
+		os.execute("/etc/init.d/uhttpd restart")
 	end
 
 
@@ -192,6 +199,13 @@ while 1 do
 		os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
 	end
 
+	if ETHLINK=="up" and STATUS=="true" then
+		-- -------------------------------------
+		-- checkInternet()
+		-- -------------------------------------
+		checkInternet()
+	end
+
 	if trim(shell_exec("uci get wireless.radio0.disabled"))=="0" and trim(shell_exec("uci get wireless.@wifi-iface[0].mode"))~="ap" then
 		-- STA mode
 		if trim(shell_exec("ifconfig wlan0 | grep \"inet addr\""))=="" then
@@ -202,6 +216,10 @@ while 1 do
 			sleep(3)
 			FIRSTINTERNETCHECK = false
 		elseif (WIFILINK==1) and (checkInternet()~=true) then
+			-- -------------------------------------
+			-- checkInternet()
+			-- -------------------------------------
+
 			-- wifi interface has valid IP
 			-- ping wifi gateway
 			-- local _wifigateway = trim(shell_exec("route -n | grep UG | grep wlan0 | awk '{print $2}'"))
@@ -306,7 +324,7 @@ while 1 do
 					INTERNETOK=""
 					POWERLOW=""
 				else
-					INTERNETOK=checkInternet()
+					INTERNETOK=checkInternet("cache")
 					SIGNALSTRENGTH=tonumber(shell_exec("iw dev wlan0 link | grep signal | cut -d ':' -f 2  | awk '{print $1}'"))
 					if SIGNALSTRENGTH~=nil and SIGNALSTRENGTH < -80 then POWERLOW="1" else POWERLOW="0" end
 				end
@@ -344,7 +362,7 @@ while 1 do
 					local _currentPower = tonumber(shell_exec("iw dev wlan0 link | grep signal | cut -d ':' -f 2  | awk '{print $1}'"))
 					if _currentPower==nil then _currentPower=-100 end
 					if _currentPower < -80 then CURRENT_POWERLOW="1" else CURRENT_POWERLOW="0" end
-					CURRENT_INTERNETOK=checkInternet()
+					CURRENT_INTERNETOK=checkInternet("cache")
 				else
 					CURRENT_POWERLOW=""
 					CURRENT_INTERNETOK=""
@@ -356,7 +374,7 @@ while 1 do
 						INTERNETOK=""
 						POWERLOW=""
 					else
-						INTERNETOK=checkInternet()
+						INTERNETOK=checkInternet("cache")
 						if tonumber(shell_exec("iw dev wlan0 link | grep signal | cut -d ':' -f 2  | awk '{print $1}'")) < -80 then POWERLOW="1" else POWERLOW="0" end
 					end
 

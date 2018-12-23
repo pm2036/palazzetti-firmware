@@ -34,7 +34,7 @@ while true do
 
 		if (trim(shell_exec("ps | grep \"[tail] -f " .. CBOXPARAMS["MQTT_TXFIFO"] .. "\""))~="") then
 			vprint("kill persistent pub..")
-			os.execute("kill -9 `ps | grep \"[tail] -f /tmp/mqtt_fifotx\" | awk '{print $1}'`")
+			os.execute("kill -9 `ps | grep \"[tail] -f " .. CBOXPARAMS["MQTT_TXFIFO"] .. "\" | awk '{print $1}'`")
 		end
 		CBOXPARAMS["MQTT_TS_ACTIVITY"] = getTS("sec")
 	end
@@ -96,7 +96,8 @@ while true do
 						vprint("create header to telemetry file")
 						mainheader=datastep:sub(0, j-1)
 						writeinfile(CBOXPARAMS["mainJsonHeaderFile"], mainheader)
-						os.execute("rm -f " .. CBOXPARAMS["mainJsonDataFile"])
+						-- Prevent deletion of telemetry file
+						-- os.execute("rm -f " .. CBOXPARAMS["mainJsonDataFile"])
 					end
 
 					vprint("append to telemetry file")
@@ -104,7 +105,8 @@ while true do
 					datastep = "{" .. myts .. datastep:sub(j+1, datastep:len()-2):gsub("\"", "\\\"") .. "}"
 					os.execute("echo -n \"" .. datastep .. "\" >> " .. CBOXPARAMS["mainJsonDataFile"])
 
-					if count<steps then
+					-- 600 = average size of telemetry file
+					if ((file_exists(CBOXPARAMS['mainJsonDataFile']) ~= true) or (fsize(CBOXPARAMS['mainJsonDataFile']) < (steps * 350))) then
 						os.execute("echo -n \",\" >> " .. CBOXPARAMS["mainJsonDataFile"])
 
 						count = count + 1
@@ -131,6 +133,8 @@ while true do
 						end
 
 						count = 1
+						-- After publish, clean telemetry collect temporary datastore
+						os.execute("rm -f " .. CBOXPARAMS["mainJsonDataFile"])
 					end
 				end
 				-- not valid datastep

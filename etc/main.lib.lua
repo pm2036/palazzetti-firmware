@@ -194,21 +194,34 @@ function getTS(tsformat)
 	return os.date('%Y-%m-%d %H:%M:%S')
 end
 
-function getMinutes()
+function getMinutes(idate)
+
+	if (idate ~= nil) then
+		-- ore + minuti
+		return ((tonumber(idate:sub(-8, -7)) * 60) + (tonumber(idate:sub(-5, -4))))
+	end
+
 	return tonumber(os.date('%H'))*60 + tonumber(os.date('%M'))
 end
 
-function checkInternet()
+function checkInternet(cmd)
 
-	local pingAttempt = trim(shell_exec("wget -q --spider -T 4 http://google.com 2>/dev/null"))
+	-- check only from cache
+	if (cmd == "cache") then
+		return ((file_exists("/tmp/isICONN")) and true or false)
+	end
 
-	-- if shell_exec("wget -q --spider -T 2 http://google.com 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
-	if pingAttempt:len() <= 0 then
+	local pingAttempt = trim(shell_exec("curl -q --head http://clients3.google.com/generate_204 2>/dev/null"))
+	vprint("Attempt real ping internet..");
+	-- if shell_exec("wget -q --spider -T 2 http://www.google.com/test 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
+	if (pingAttempt ~= nil and pingAttempt:len() > 0) then
 		mutex(function() if file_exists("/tmp/staticdata.json") then exec("sed -i -e 's/\"ICONN\":0/\"ICONN\":1/g' /tmp/staticdata.json") end end, "/tmp/lockjstatic")
+		os.execute("touch -f /tmp/isICONN")
 		return true
 	end
-	
+
 	mutex(function() if file_exists("/tmp/staticdata.json") then exec("sed -i -e 's/\"ICONN\":1/\"ICONN\":0/g' /tmp/staticdata.json") end end, "/tmp/lockjstatic")
+	os.execute("rm -f /tmp/isICONN")
 	return false
 end
 

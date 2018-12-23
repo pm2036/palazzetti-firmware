@@ -352,7 +352,7 @@ $.menuInit = function() {
 			$("#lvMenu").listview().listview("refresh");
 		})
 		.always(function() {
-			$("a.menulink").click(function () {
+			$(document).on("click", "a.menulink", function () {
 				var myhref = $(this).attr("href").substring(1, $(this).attr("href").length) + ".lua";
 				$.loadmaincontent(myhref);
 			});

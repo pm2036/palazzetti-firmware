@@ -1,0 +1,1 @@
+* * * * * lua /etc/plzwatchdog_cron.lua > /dev/null >/dev/null 2>&1

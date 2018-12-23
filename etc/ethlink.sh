@@ -21,7 +21,7 @@ STATUS=$(echo `ifstatus lan | grep '"up":' | cut -d':' -f2 | cut -d',' -f1`)
 
 if [ "$LINK" = "down" -a "$STATUS" = "true" ]; then
 	ifdown lan
-	wifi down && wifi && kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`
+	wifi down && wifi && kill -9 `ps | grep [mqtt].lua | awk '{print $1}'` 2>/dev/null
 	if [ "$VERBOSE" ]; then
 		echo "down"
 	fi
@@ -29,7 +29,7 @@ if [ "$LINK" = "down" -a "$STATUS" = "true" ]; then
 fi
 
 if [ "$LINK" = "up" -a "$STATUS" = "false" ]; then
-	ifup lan && kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`
+	ifup lan && kill -9 `ps | grep [mqtt].lua | awk '{print $1}'` 2>/dev/null
 	if [ "$VERBOSE" ]; then
 		echo "up"
 	fi

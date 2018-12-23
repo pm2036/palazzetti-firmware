@@ -3,9 +3,7 @@
 	"off_when_nomatch": true,
 	"scenarios": {
 		"off":{
-			"settings":{
-				"CMD": "OFF"
-			}
+			"settings":{}
 		},
 		"economy":{
 			"settings": {

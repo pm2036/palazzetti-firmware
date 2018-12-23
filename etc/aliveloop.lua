@@ -35,8 +35,8 @@ function checkClock(jdata)
 		vprint("Detected timezone")
 		vprint(detectedTimezone)
 		-- If timezone is valid
-		if (detectedTimezone ~= false) then 
-			-- If timezone is already present inside the file 
+		if (detectedTimezone ~= false) then
+			-- If timezone is already present inside the file
 			if (readfile("/etc/TZ") == detectedTimezone) then
 				vprint("Already persisted to TZ, store in RAM")
 				-- Write to temporary timezone file
@@ -56,22 +56,20 @@ function checkClock(jdata)
 	end
 
 	if jdata["APLTS"] == nil then return false end
+	if APLCONN~=1 then return false end
 
-	if APLCONN==1 then
-
-		if (ICONN == 1) then
-			-- internet connected
-			if (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16)) then
-				syslogger("CLOCK", "Syncronize CBOX->APPLIANCE")
-				sendmsg("SET TIME")
-			end
-		else
-			-- internet not connected
-			-- check if syncronize clock from appliance to CBOX
-			if (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16)) then
-				syslogger("CLOCK", "Syncronize APPLIANCE->CBOX")
-				os.execute("date +\"%Y-%m-%d %H:%M\" -s \"" .. jdata["APLTS"]:sub(1,16) .. "\"")
-			end
+	-- internet connected
+	if (ICONN == 1) then
+		if (isTimerSyncClockFeatureEnabled() and (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16))) then
+			syslogger("CLOCK", "Syncronize CBOX->APPLIANCE")
+			sendmsg("SET TIME")
+		end
+	-- internet not connected
+	else		
+		-- check if syncronize clock from appliance to CBOX
+		if (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16)) then
+			syslogger("CLOCK", "Syncronize APPLIANCE->CBOX")
+			os.execute("date +\"%Y-%m-%d %H:%M\" -s \"" .. jdata["APLTS"]:sub(1,16) .. "\"")
 		end
 	end
 end
@@ -81,14 +79,22 @@ sleep(10)
 
 while true do
 
+	local retry=3
+
 	-- Check Notification File Exists and Empty Trigger Object
 	if ((fsize("/etc/notifications.json")>0) and (TRIGGER == nil)) then
 		TRIGGER = cjson.decode(readfile("/etc/notifications.json"))
 	end
 
-	sendmsg("GET ALLS", "/tmp/alivedata.json")
-	jdata = cjson.decode(readfile("/tmp/alivedata.json"))
-	if ((jdata["DATA"]==nil) or (jdata["SUCCESS"]==nil) or (jdata["SUCCESS"] == false)) then
+	while(retry > 0) do
+		sendmsg("GET ALLS", "/tmp/alivedata.json")
+		jdata = cjson.decode(readfile("/tmp/alivedata.json"))
+		retry = ((jdata["DATA"]~=nil) and (jdata["SUCCESS"]~=nil) and (jdata["SUCCESS"] ~= false)) and -1 or retry - 1
+		if (retry~=-1) then sleep(5) end
+	end
+
+	if (retry >= 0) then
+
 		mutex(function() exec("sed -i -e 's/\"APLCONN\":1/\"APLCONN\":0/g' /tmp/staticdata.json") end, "/tmp/lockjstatic")
 		os.execute("kill -9 $(pidof plzbridge) && plzbridge &")
 		-- Wait because it doesn't reach the end of the loop
@@ -190,7 +196,7 @@ while true do
 		writeinfile(tmpfile, cjson.encode(jdata))
 
 		mqttpub(CURRENT_BROKER, "notification", tmpfile, false)
-		os.execute("rm " .. tmpfile)
+		os.execute("rm -f " .. tmpfile)
 
 		NOTIFICATION = {}
 		notifcount = 0

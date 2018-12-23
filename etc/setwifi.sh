@@ -293,6 +293,8 @@ do
 			echo "ash /etc/setwifi.sh sta \"$2\" \"$3\" \"$KEY\" $5 $6 $7 $8" >> /tmp/apply_netconfig.sh
 		fi
 
+		sleep 20 && lua /www/cgi-bin/syscmd.lua "cmd=check_applywifi" &
+
 		# Disable unusued network interface
 		uci set network.wlantest.disabled=1
 

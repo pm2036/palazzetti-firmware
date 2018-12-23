@@ -58,7 +58,7 @@ while true do
 			mqttsub(CURRENT_BROKER)
 		else
 			-- try to auto-enroll
-			if (checkInternet()==true) then
+			if (checkInternet("cache")==true) then
 				vprint("Try to enroll...")
 				syslogger("MQTT", "awsenroll")
 				os.execute("lua /etc/awsenroll.lua")
@@ -195,18 +195,17 @@ while true do
 				elseif (checkCmd(subcmd,"GPTC")) then
 					-- MQT GPTC
 					-- Get patches list
-					output = "{\"INFO\":{\"RSP\":\"OK\",\"TS\":\"" .. os.date('%Y-%m-%d %H:%M:%S') .. "\"}"
+					local patches = {}
+					patches["PATCHES"] = {}
+
 					if file_exists("/etc/patch") then
-						output = output .. ", \"Patches\":{"
 						ln = 1
 						for line in io.lines("/etc/patch") do
-							output = output .. "\"P" .. ln .. "\":\"" .. line .. "\","
+							table.insert(patches["PATCHES"], line)
 							ln = ln + 1
 						end
-						output = output:sub(1, -2)
-						output = output .. "}"
 					end
-					output = output .. "}"
+					output = cjson.encode(getStandardJson(completecmd, patches, "Retrieve patch list"))
 
 				elseif (checkCmd(subcmd,"OTAU")) then
 
