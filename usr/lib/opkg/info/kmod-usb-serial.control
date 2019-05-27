@@ -1,4 +1,4 @@
-Package: kmod-usb2
+Package: kmod-usb-serial
 Version: 4.4.14-1
 Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3), kmod-usb-core
 Source: package/kernel/linux
@@ -6,5 +6,5 @@ License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 22658
-Description:  Kernel support for USB2 (EHCI) controllers
+Installed-Size: 11729
+Description:  Kernel support for USB-to-Serial converters

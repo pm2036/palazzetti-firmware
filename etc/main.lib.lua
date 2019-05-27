@@ -201,7 +201,7 @@ function getMinutes(idate)
 		return ((tonumber(idate:sub(-8, -7)) * 60) + (tonumber(idate:sub(-5, -4))))
 	end
 
-	return tonumber(os.date('%H'))*60 + tonumber(os.date('%M'))
+	return -1
 end
 
 function checkInternet(cmd, host)

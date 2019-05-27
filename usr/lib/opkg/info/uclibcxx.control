@@ -1,0 +1,9 @@
+Package: uclibcxx
+Version: 0.2.4-2
+Depends: libc
+Source: package/libs/uclibc++
+License: LGPL-2.1+
+Section: libs
+Architecture: ramips
+Installed-Size: 68670
+Description:  C++ library for embedded systems

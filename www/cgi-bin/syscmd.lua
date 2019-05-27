@@ -379,7 +379,7 @@ function getOutput()
 			jtimer["curr_timezone_country"] = readfile("/tmp/curr_timezone_country")
 
 			jtimer["ecostart_mode_enabled"] = ((jtimer["ecostart_mode_enabled"] == nil) and false or jtimer["ecostart_mode_enabled"])
-			jtimer["sync_clock_enabled"] = ((jtimer["sync_clock_enabled"] == nil) and true or jtimer["sync_clock_enabled"])
+			-- jtimer["sync_clock_enabled"] = ((jtimer["sync_clock_enabled"] == nil) and true or jtimer["sync_clock_enabled"])
 
 		local jsonout = {}
 			jsonout["SUCCESS"] = true

@@ -118,10 +118,10 @@ while true do
 
 	APLCONN=1
 
-	if (isTimerEnabled() == true) then
+	-- if (isTimerEnabled() == true) then
 		-- check CLOCK settings
-		checkClock(jdata["DATA"])
-	end
+		-- checkClock(jdata["DATA"])
+	-- end
 
 	-- check Timer Chrono termostat
 	checkTimer(jdata["DATA"])

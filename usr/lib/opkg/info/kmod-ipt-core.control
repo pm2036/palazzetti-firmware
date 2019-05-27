@@ -1,12 +1,12 @@
 Package: kmod-ipt-core
 Version: 4.4.14-1
-Depends: kernel (=4.4.14-1-6239fc05868ea15003547d91f4f07f0e), kmod-nf-ipt
+Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3), kmod-nf-ipt
 Source: package/kernel/linux
 License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 15009
+Installed-Size: 15008
 Description:  Netfilter core kernel modules
  Includes:
  - comment

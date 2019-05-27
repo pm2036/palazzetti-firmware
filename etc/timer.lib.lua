@@ -137,6 +137,11 @@ function checkTimer(jdata)
 
 	local applied_commands = {}
 
+	-- minutes not valid
+	if (currentMinutes == -1) then
+		return false
+	end
+
 	if (file_exists("/tmp/timer_currentcmd")~=false) then
 
 		local _appliedCommandsResult, _appliedCommandsData = pcall(cjson.decode, readfile("/tmp/timer_currentcmd"))
@@ -159,7 +164,7 @@ function checkTimer(jdata)
 			jtimer["applid"] = myapplid
 			jtimer["enabled"] = false
 
-			jtimer["sync_clock_enabled"] = true
+			-- jtimer["sync_clock_enabled"] = true
 			jtimer["ecostart_mode_enabled"] = false
 
 			jtimer["scenarios"] = {}

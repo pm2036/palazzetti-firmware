@@ -5,5 +5,5 @@ Source: package/base-files
 License: GPL-2.0
 Section: base
 Architecture: ramips
-Installed-Size: 42207
+Installed-Size: 42208
 Description:  This package contains a base filesystem and system scripts for OpenWrt.

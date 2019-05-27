@@ -1,6 +1,6 @@
 Package: libpcre
-Version: 8.42-1
-Depends: libc
+Version: 8.42-2
+Depends: libc, uclibcxx
 Source: feeds/packages/libs/pcre
 License: BSD-3-Clause
 LicenseFiles: LICENCE

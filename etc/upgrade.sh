@@ -1,6 +1,14 @@
 #!/bin/sh
 
+# Store File that have to be preserved
+NETWORK_LINE='/etc/config/network'
+WIRELESS_LINE='/etc/config/wireless'
+TIMER_LINE='/etc/timer.json'
+UPGRADE_LINE='/etc/upgrade_config.sh'
+FILE=/etc/sysupgrade.conf
+
 # Stop Services
+/etc/init.d/cron stop
 /etc/init.d/plzwatchdog stop
 killall lua
 killall mosquitto_sub
@@ -42,7 +50,12 @@ else
 	WLAN0_MASK=`uci get network.wlan.netmask`
 	WLAN0_GTW=`uci get network.wlan.gateway`
 
-	echo "ash /etc/setwifi.sh \"$WLAN0_MODE\" \"$WLAN0_SSID\" \"$WLAN0_ENC\" \"$WLAN0_KEY\" $WLAN0_PROTO $WLAN0_IPADDR $WLAN0_MASK $WLAN0_GTW" >> "/etc/upgrade_config.sh"
+	if [ ! -f "/etc/systemver" ] || [ "$(cat /etc/systemver | cut -c 1-2)" = '1.' ]; then
+		echo "ash /etc/setwifi.sh \"$WLAN0_MODE\" \"$WLAN0_SSID\" \"$WLAN0_ENC\" \"$WLAN0_KEY\" $WLAN0_PROTO $WLAN0_IPADDR $WLAN0_MASK $WLAN0_GTW" >> "/etc/upgrade_config.sh"
+	else
+		grep -qF -- "$NETWORK_LINE" "$FILE" || echo "$NETWORK_LINE" >> "$FILE"
+		grep -qF -- "$WIRELESS_LINE" "$FILE" || echo "$WIRELESS_LINE" >> "$FILE"
+	fi
 fi
 
 # Save Ethernet Network Configurations
@@ -65,11 +78,6 @@ fi
 
 chmod +x /etc/upgrade_config.sh
 
-# Store File that have to be preserved
-TIMER_LINE='/etc/timer.json'
-UPGRADE_LINE='/etc/upgrade_config.sh'
-FILE=/etc/sysupgrade.conf
-
 grep -qF -- "$TIMER_LINE" "$FILE" || echo "$TIMER_LINE" >> "$FILE"
 grep -qF -- "$UPGRADE_LINE" "$FILE" || echo "$UPGRADE_LINE" >> "$FILE"
 
@@ -86,6 +94,7 @@ if [ "$(md5sum /tmp/firmware.bin | cut -d' ' -f 1 | xargs)" != "$(cat /tmp/firmw
     # Clean temporary upgrade configuration file
     rm -f /etc/upgrade_config.sh
     # Restart service
+    /etc/init.d/cron start
 	/etc/init.d/plzwatchdog start
 	echo ERROR: /tmp/firmware.md5 not match with md5sum of /tmp/firmware.bin
 	exit 1
@@ -96,6 +105,7 @@ if [ ! -z "$TESTSYSUPGRADE" ]; then
 	# Clean temporary upgrade configuration file
 	rm -f /etc/upgrade_config.sh
 	# Restart service
+	/etc/init.d/cron start
 	/etc/init.d/plzwatchdog start
 	echo ERROR: /tmp/firmware.bin is not a valid upgrade file
 	exit 1
