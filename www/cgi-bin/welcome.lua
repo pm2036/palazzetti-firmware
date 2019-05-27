@@ -1,7 +1,11 @@
 cbtype = shell_exec("ash /etc/myboard.sh")
 
 out = [[
-
+<script>
+	$(document).ready(function() {
+		$.initWelcome();
+	});
+</script>
 <h1>Welcome</h1>
 
 	<a class="menulink ui-btn ui-shadow" href="#wifi" >Set WiFi</a>
@@ -35,7 +39,12 @@ out = [[
 
 out = out .. [[
 				</div>
-
+<div data-role="popup" data-mini="true" id="popReport">
+<div data-role="content">
+	<div data-role="content" id="popupContent"></div>
+	<a href="#" class="ui-btn" data-rel="back" data-mini="true">Close</a>
+</div>
+</div>
 ]]
 
 return out

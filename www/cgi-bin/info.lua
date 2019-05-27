@@ -98,10 +98,10 @@ out = out .. [[
 ]]
 
 				if (file_exists("/etc/patch") and (fsize("/etc/patch")>0)) then
-					out = out .. [[
-					<div class="ui-block-a">Applied patches</div>
-					<div class="ui-block-b ui-mini">]] .. readfile("/etc/patch") .. [[</div>
-					]]
+					-- out = out .. [[
+					-- <div class="ui-block-a">Applied patches</div>
+					-- <div class="ui-block-b ui-mini">]] .. readfile("/etc/patch") .. [[</div>
+					-- ]]
 				end
 
 out = out .. [[

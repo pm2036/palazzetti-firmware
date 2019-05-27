@@ -113,6 +113,7 @@ function writejsonpar(key, value)
 end
 
 function vprint(msg)
+	if msg==nil then msg="" end
 	if (CBOXPARAMS["MQTT_VERBOSE"]==1) then print(msg) end
 end
 

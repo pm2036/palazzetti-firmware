@@ -204,15 +204,19 @@ function getMinutes(idate)
 	return tonumber(os.date('%H'))*60 + tonumber(os.date('%M'))
 end
 
-function checkInternet(cmd)
+function checkInternet(cmd, host)
+
+	if (host==nil) then
+		host = "http://clients3.google.com/generate_204"
+	end
 
 	-- check only from cache
 	if (cmd == "cache") then
 		return ((file_exists("/tmp/isICONN")) and true or false)
 	end
 
-	local pingAttempt = trim(shell_exec("curl -q --head http://clients3.google.com/generate_204 2>/dev/null"))
-	vprint("Attempt real ping internet..");
+	local pingAttempt = trim(shell_exec("curl -q --head " .. host .. " 2>/dev/null"))
+	-- vprint("Attempt real ping internet..");
 	-- if shell_exec("wget -q --spider -T 2 http://www.google.com/test 2>/dev/null; if [ $? -eq 0 ]; then echo -n '1'; else echo -n '0'; fi") == "1" then
 	if (pingAttempt ~= nil and pingAttempt:len() > 0) then
 		mutex(function() if file_exists("/tmp/staticdata.json") then exec("sed -i -e 's/\"ICONN\":0/\"ICONN\":1/g' /tmp/staticdata.json") end end, "/tmp/lockjstatic")

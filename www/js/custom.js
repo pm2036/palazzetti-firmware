@@ -181,11 +181,13 @@ $.paramsInit = function() {
 
 }
 
-var passphrase = "Qtest2017";
+var passphrase = "QtestCBOX";
 var inputphrase = "";
-$.initInfo = function() {
+
+$.initWelcome = function() {
 	$.globalInit();
-	mainpage = "info";
+	mainpage = "welcome";
+
 
 	$("body").unbind("keypress");
 	$("body").bind("keypress", function(e) {
@@ -204,13 +206,14 @@ $.initInfo = function() {
 		$.getJSON("syscmd.lua?cmd=cboxtest")
 			.done(function(data) {
 
-				var $grid = '<div class="ui-grid-a" style="min-width: 30em;">';
+				var grid = '<div class="ui-grid-a" style="min-width: 35em;">';
 
-				$.each(data, function(key, val) {
+				$.each(data.payload, function(key, val) {
 					var bgcolor = ";";
 					switch (key) {
-						case 'WIFISCAN':
+						case 'WLIST':
 							var result = 0;
+							key = "WIFISCAN";
 							for (var i=0; i<val.length; i++) {
 								if (+val[i].signal > -60) {
 									result = 1;
@@ -225,7 +228,7 @@ $.initInfo = function() {
 								val = "ERROR";
 							}
 							break;
-						case 'APPLCONN':
+						case 'APLCONN':
 							key = "SERIALCOM";
 							if (+val==1) {
 								val = "OK";
@@ -242,7 +245,8 @@ $.initInfo = function() {
 								val = "ERROR";
 							}
 							break;
-						case 'INTERNETCONN':
+						case 'ICONN':
+							key = "CHECK INTERNET";
 							if (+val==1) {
 								val = "OK";
 							} else {
@@ -259,18 +263,25 @@ $.initInfo = function() {
 							break;
 					}
 
-					$grid += '<div class="ui-block-a" style="'+bgcolor+'">' + key + '</div>';
-					$grid += '<div class="ui-block-b" style="'+bgcolor+'; text-align: right">' + val + '</div>';
+					grid += '<div class="ui-block-a" style="'+bgcolor+'">' + key + '</div>';
+					grid += '<div class="ui-block-b" style="'+bgcolor+'; text-align: right">' + val + '</div>';
 				})
-				$grid += '</div>';
+				grid += '</div>';
 
-				$("#popupContent").html($grid);
+				$("#popupContent").html(grid);
 				$("#popReport").popup("open");
 			})
 			.always(function() {
 				$.mobileLoadingShow(false);
 			})
 	})
+
+
+}
+
+$.initInfo = function() {
+	$.globalInit();
+	mainpage = "info";
 
 	$.syscmdJson('nwdata')
 		.done(function(data) {

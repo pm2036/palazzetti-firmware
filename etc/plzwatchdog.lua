@@ -284,8 +284,12 @@ while 1 do
 			local static_data_flag, static_data = pcall(cjson.decode, readfile("/tmp/staticdata.json"))
 			if ((static_data_flag == true) and (static_data["DATA"] ~= nil)) then
 
+				-- Prevent TS to be used as a comparison value
+				static_data["INFO"]["TS"] = "0"
 				-- Prevent WPWR to be used as a comparison value
 				static_data["DATA"]["WPWR"] = "0"
+				-- Prevent ICONN to be used as a comparison value
+				static_data["DATA"]["ICONN"] = "0"
 				-- Consider only DATA and not INFO
 				writeinfile("/tmp/staticdata_md5.json", cjson.encode(static_data["DATA"]))
 

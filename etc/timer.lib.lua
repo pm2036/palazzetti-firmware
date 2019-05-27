@@ -152,7 +152,10 @@ function checkTimer(jdata)
 			syslogger("TIMER", "Reset Appliance Identifier: " .. myapplid)
 
 			-- need to reset the timer!!
-			jtimer = {}
+			if (jtimer == nil) then
+				jtimer = {}
+			end
+
 			jtimer["applid"] = myapplid
 			jtimer["enabled"] = false
 
@@ -178,7 +181,8 @@ function checkTimer(jdata)
 			jtimer["scenarios"]["warm"]["settings"]["SET SETP"] = newsetpoint
 			-- jtimer["scenarios"]["off"]["settings"]["CMD"] = "OFF"
 
-			jtimer["scheduler"] = {}
+			-- Do not reset scheduler choosen by user
+			-- jtimer["scheduler"] = {}
 			jtimer["off_when_nomatch"] = true
 
 			os.execute("rm -f /tmp/timer.json")

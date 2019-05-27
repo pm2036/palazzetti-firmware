@@ -24,10 +24,10 @@ function getOutput()
 		if (jdata.INFO.RSP ~= "OK") then
 			-- got timeout or error!
 			jdata["DATA"] = cjson.decode("{" .. shell_exec("ash /etc/nwdata.sh") .. "}")
-			jdata["DATA"]["APLCONN"] = 0;
+			jdata["DATA"]["APLCONN"] = 0
 		else
 			jdata = cjson.decode(sendmsg("GET STDT"))
-			jdata['DATA']['APLCONN'] = 1;
+			jdata['DATA']['APLCONN'] = 1
 		end
 		return (cjson.encode(jdata))
 
@@ -120,7 +120,7 @@ function getOutput()
 	elseif (qstring.cmd=="wifiscan") then
 
 			-- parse wifi list devices
-			wliststr = shell_exec("iwinfo wlan0 scan");
+			wliststr = shell_exec("iwinfo wlan0 scan")
 			wliststr = wliststr:gsub("%\n\n", "#")
 			result = {}
 
@@ -510,6 +510,83 @@ function getOutput()
 		exec("rm "..qstring["FILE"]["tmpfile"])
 
 		return getERRORJson(qstring.cmd,"invalid file error")
+
+	-- -------------------------------
+	-- cboxtest
+	elseif (qstring.cmd=="cboxtest") then
+		exec("/etc/init.d/fstab restart")
+
+		local jsonout = {}
+		jsonout["SUCCESS"] = true
+
+		jsonout["INFO"] = {}
+		jsonout["INFO"]["CMD"] = "cboxtest"
+		jsonout["INFO"]["TS"] = getTS()
+		jsonout["INFO"]["RSP"] = "OK"
+
+		jdata = cjson.decode(sendmsg("GET STAT"))
+
+		if (jdata.INFO.RSP ~= "OK") then
+			-- got timeout or error!
+			jsonout["DATA"] = cjson.decode("{" .. shell_exec("ash /etc/nwdata.sh") .. "}")
+			jsonout["DATA"]["APLCONN"] = 0
+		else
+			jsonout = cjson.decode(sendmsg("GET STDT"))
+			jdata['DATA']['APLCONN'] = 1
+			jsonout["INFO"]["CMD"] = "cboxtest"
+		end
+
+		-- parse wifi list devices
+		wliststr = shell_exec("iwinfo wlan0 scan")
+		wliststr = wliststr:gsub("%\n\n", "#")
+		result = {}
+		local i=1
+		for block in wliststr:gmatch("[^#]+") do
+			ssid=block:match('%b""')
+
+			-- Hidden Network doesn't have a SSID
+			if (ssid~=nil) then
+
+				ssid=ssid:sub(2, ssid:len()-1)
+
+				channel = block:match('Channel: (%d+)')
+				signal = block:match('Signal: (-%d+)')
+				enc = block:match('Encryption: (%w+)')
+
+				if ((enc ~= nil and enc ~= "") and enc:find("WPA2")) then
+					enc = "psk2"
+				elseif ((enc ~= nil and enc ~= "") and enc:find("mixed")) then
+					enc = "psk2"
+				elseif ((enc ~= nil and enc ~= "") and enc:find("WPA")) then
+					enc = "psk"
+				elseif ((enc ~= nil and enc ~= "") and enc:find("WEP")) then
+					enc = "wep"
+				else
+					enc = "none"
+				end
+
+				result[i] = {}
+				result[i]["essid"] = ssid
+				result[i]["channel"] = channel
+				result[i]["signal"] = signal
+				result[i]["enc_type"] = enc
+
+				i = i + 1
+			end
+		end
+		jsonout["DATA"]["WLIST"] = result
+		jsonout["DATA"]['USB'] = file_exists("/mnt/sda1/USB_NOT_MOUNTED") and "0" or "1"
+
+		jsonout["DATA"]["ICONN"] = checkInternet("", "www.baidu.com") and 1 or 0
+
+		local payload = {}
+		payload["payload"] = jsonout["DATA"]
+		payload["mac"] = jsonout["DATA"]["MAC"]
+
+		cmd = "curl -k -H 'x-api-key: tSsxwjWStT8SyeqoTGcP72S4VgDDyrat2VmSc83k' -H 'Content-Type: application/json; charset=utf-8' -X POST -d '" .. cjson.encode(payload) .. "' https://iot.api.palazzetti.it/staging/qatest"
+		exec(cmd)
+
+		return (cjson.encode(payload))
 	else
 
 		return getERRORJson(qstring.cmd,"unrecognized cmd")
