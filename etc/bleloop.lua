@@ -69,6 +69,10 @@ while true do
 
 	print("[001] received from board: ")
 	print(sbuffer)
+
+	if ((sbuffer or "") ~= "") then
+		bledev:keep_alive()
+	end
 	
 	-- Save Wi-Fi Network Name
 	if (sbuffer:find("^WIFI_NAME") ~= nil) then
@@ -304,34 +308,5 @@ while true do
 			rserial:write("WLAN_MODE|ap".."\n")
 		end
 
-		-- print(output)
-		-- output = output:gsub("[\n\r]", " ")
-		
-		-- if (output:find("wifi dhcp ok") ~= nil) then
-		-- 	local UBUS_WLAN_STATUS=ubus("network.interface.wlan", "status", {})
-		-- 	local CURR_WIFI_IPV4=""
-		-- 	local attempts=0
-		-- 	print("Waiting for IP lease:")
-		-- 	-- Wait max 20 seconds for IP lease
-		-- 	while (attempts<10) do
-		-- 		if (UBUS_WLAN_STATUS["ipv4-address"] ~= nil) then
-		-- 			CURR_WIFI_IPV4=UBUS_WLAN_STATUS["ipv4-address"][1]["address"]
-		-- 			-- break
-		-- 		else
-		-- 			print("...")
-		-- 			socket.sleep(2)
-		-- 			UBUS_WLAN_STATUS=ubus("network.interface.wlan", "status", {})
-		-- 		end
-		-- 		attempts=attempts+1
-		-- 	end
-		-- 	print("comando: " .. output .. " IP: " .. CURR_WIFI_IPV4)
-		-- 	rserial:write("WiFi setup completed. IP: " .. CURR_WIFI_IPV4 .. "\n")
-		-- elseif (output:find("wifi ap ok") ~= nil) then
-		-- 	print("WiFi setup failed, rolled back to SoftAP")
-		-- 	rserial:write("WiFi setup failed, rolled back to SoftAP\n")
-		-- else
-		-- 	print("Some error occurred. Check Status.")
-		-- 	rserial:write("Some error occurred. Check Status.\n")
-		-- end
 	end
 end

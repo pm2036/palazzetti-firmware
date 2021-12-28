@@ -577,6 +577,20 @@ function bledev:upgrade_init(arg)
 	return utils:getOKJson(mycmd, "upgradeinitbledev OK")
 end
 
+function bledev:keep_alive(arg)
+	local mycmd = "keepalivebledev"
+	
+	local _keepAlivePayload = {
+		TS=utils:getTS("sec")
+	}
+	-- Ensure devices folder
+	utils:shell_exec("mkdir -p /tmp/devices")
+	-- Write keep alive file to notify other process of running operation
+	utils:writeinfile("/tmp/devices/keepalive.json", cjson.encode(_keepAlivePayload))
+	-- Upgrade procedure will start soon
+	return utils:getOKJson(mycmd, "keepalivebledev OK")
+end
+
 function bledev:upgrade_start(arg)
 	local mycmd = "upgradestartbledev"
 	

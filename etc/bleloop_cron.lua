@@ -43,6 +43,12 @@ if PID~="" then
 	utils:syslogger(DEBUG, "BLELOOP_CRON is alive and should check device")
 	print("BLELOOP_CRON is alive and should check device")
 
+	-- If keep alive file not found, kill BLE and remove flag
+	if (utils:file_exists("/tmp/devices/keepalive.json") == false) then
+		utils:shell_exec("pgrep -f bleloop.lua | xargs kill -9")
+		utils:shell_exec("rm -f /tmp/isUARTBridge")
+	end
+
 	local _actionResult, _actionData = pcall(cjson.decode, bledev:action_sync())
 
 	if (_actionResult == true and _actionData ~= nil and _actionData["DATA"]) then
