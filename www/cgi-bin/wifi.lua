@@ -80,7 +80,7 @@ out = out .. [[
 
 				<div class="ui-field-contain">
 					<label for="WSSID">SSID</label>
-					<input maxlength="32" type="text" name="WSSID" id="WSSID" class="wifidata" value=""  />
+					<input maxlength="64" type="text" name="WSSID" id="WSSID" class="wifidata" value=""  />
 				</div>
 				<div class="ui-field-contain">
 					<label for="WENC">Encryption</label>
@@ -93,7 +93,7 @@ out = out .. [[
 				</div>
 				<div class="ui-field-contain">
 					<label for="WIFI_KEY">Password</label>
-					<input maxlength="32" type="text" name="WIFI_KEY" id="WIFI_KEY" class="wifidata" value=""  />
+					<input maxlength="64" type="text" name="WIFI_KEY" id="WIFI_KEY" class="wifidata" value=""  />
 				</div>
 				<div class="ui-field-contain">
 					<label for="WCH">Channel</label>

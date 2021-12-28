@@ -6,7 +6,7 @@ dofile "/etc/maindef.lua"
 FILE="/tmp/enroll.enc"
 
 PAYLOAD="{\"mac\":\"" .. CBOXPARAMS["MAC"] .. "\"}"
-CMD="curl -s --cacert /etc/cacerts.pem -XPOST -H 'x-api-key: " .. CBOXPARAMS["API-KEY"] .. "' -H \"Content-type: application/json\" -d '" .. PAYLOAD .. "' '" .. CBOXPARAMS["API-ENDPOINT"] .. "' > " .. FILE
+CMD="curl -s --cacert /etc/cacerts.pem -XPOST -H 'x-api-key: " .. CBOXPARAMS["API-KEY"] .. "' -H \"Content-type: application/json\" -d '" .. PAYLOAD .. "' '" .. CBOXPARAMS["API-ENDPOINT"] .. "/thing" .. "' > " .. FILE
 --print(CMD)
 --eval $CMD
 os.execute(CMD)

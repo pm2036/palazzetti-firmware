@@ -2,6 +2,7 @@
 
 dofile "/etc/main.lib.lua"
 dofile "/etc/param.lib.lua"
+local sendmsg = require "palazzetti.sendmsg"
 
 local output, i, j
 local USER, PASSWD
@@ -43,7 +44,7 @@ while true do
 	if (os.time()-tonumber(CBOXPARAMS["MQTT_TS_SAMPLE"])) > tonumber(readfline("/tmp/MQTT_SAMPLETIME")) then
 		vprint("is time to get sample..")
 		outputJsonFile = gettmpfile("mqtttmp")
-		sendmsg("GET ALLS", outputJsonFile)
+		sendmsg:execute{command="GET ALLS", dest=outputJsonFile}
 		
 		-- writeinfile(outputJsonFile, readMTConnect())
 
@@ -106,7 +107,7 @@ while true do
 					os.execute("echo -n \"" .. datastep .. "\" >> " .. CBOXPARAMS["mainJsonDataFile"])
 
 					-- 600 = average size of telemetry file
-					if ((file_exists(CBOXPARAMS['mainJsonDataFile']) ~= true) or (fsize(CBOXPARAMS['mainJsonDataFile']) < (steps * 350))) then
+					if ((file_exists(CBOXPARAMS['mainJsonDataFile']) ~= true) or (fsize(CBOXPARAMS['mainJsonDataFile']) < (steps * 400))) then
 						os.execute("echo -n \",\" >> " .. CBOXPARAMS["mainJsonDataFile"])
 
 						count = count + 1

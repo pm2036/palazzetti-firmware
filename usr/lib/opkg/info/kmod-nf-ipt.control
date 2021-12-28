@@ -1,10 +1,10 @@
 Package: kmod-nf-ipt
 Version: 4.4.14-1
-Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3)
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156)
 Source: package/kernel/linux
 License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 13573
+Installed-Size: 13577
 Description:  Iptables core

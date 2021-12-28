@@ -5,28 +5,27 @@ START=120
 STOP=120
 
 start() {
-		lua /etc/udpsvr.lua &
         lua /etc/plzwatchdog.lua &
 }
 
 stop() {
-        kill -9 `pgrep -f plzwatchdog.lua` 2> /dev/null
-		kill -9 `pgrep -f udpsvr.lua` 2> /dev/null
-		kill -9 `pgrep -f mqtt.lua` 2> /dev/null
-		kill -9 `pgrep -f mqtt_apiping.lua` 2> /dev/null
-		kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null
-		kill -9 `pgrep -f leds.lua` 2> /dev/null
-		kill -9 `pgrep -f aliveloop.lua` 2> /dev/null
+		pkill -9 -f plzwatchdog.lua 2> /dev/null
+		pkill -9 -f udpsvr.lua 2> /dev/null
+		pkill -9 -f mqtt.lua 2> /dev/null
+		pkill -9 -f mqtt_apiping.lua 2> /dev/null
+		pkill -9 -f mqtt_mainloop.lua 2> /dev/null
+		pkill -9 -f leds.lua 2> /dev/null
+		pkill -9 -f aliveloop.lua 2> /dev/null
+		pkill -9 -f bleloop.lua 2> /dev/null
+		pkill -9 -f udpsvrchk.lua 2> /dev/null
+
 		killall -s 9 plzbridge 2> /dev/null
 		killall -s 9 oembridge 2> /dev/null
 		killall -s 9 mosquitto_sub 2> /dev/null
 		killall -s 9 mosquitto_pub 2> /dev/null
 		killall -s 9 sendmsg 2> /dev/null
-
-
 }
 
 boot() {
-		lua /etc/udpsvr.lua &
         lua /etc/plzwatchdog.lua 2> /dev/null &
 }

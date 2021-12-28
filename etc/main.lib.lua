@@ -1,5 +1,5 @@
 #!/usr/bin/lua
-require "socket"
+local socket = require "socket"
 
 dofile "/etc/custom.lib.lua"
 
@@ -75,6 +75,15 @@ function readfile(filepath)
 	return content
 end
 
+function init_serial(dev, baudrate)
+	local output = nil
+	local f = io.popen("stty -F " .. dev .. " " .. baudrate .. "")
+	output=f:read("*a")
+	f:close()
+
+	return output
+end
+
 function shell_exec(cmd)
 	local output = nil
 	local f = io.popen(cmd)
@@ -82,6 +91,18 @@ function shell_exec(cmd)
 	f:close()
 
 	return output
+end
+
+function shell_escape(args)
+	local ret = {}
+	for _,a in pairs(args) do
+		s = tostring(a)
+		if s:match("[^A-Za-z0-9_/:=-]") then
+			s = "'"..s:gsub("'", "'\\''").."'"
+		end
+		table.insert(ret,s)
+	end
+	return table.concat(ret, " ")
 end
 
 function readfline (filepath)
@@ -313,10 +334,29 @@ function exec(cli)
 	os.execute(cli .. " > /dev/null")
 end
 
+-- function sendmsg(cmd, dest)
+-- 	if (dest == nil) then dest=""
+-- 	else
+-- 		dest = " > " .. dest
+-- 	end
+-- 	return trim(shell_exec("lua /www/cgi-bin/sendmsg.lua \"" .. cmd .. "\" " .. dest))
+-- end
+
 function sendmsg(cmd, dest)
+	local _sendmsg = require("palazzetti.sendmsg")
+	local _output = trim(_sendmsg:execute{command=cmd})
+
+	if (dest ~= nil and dest ~= "") then
+		writeinfile(dest, _output)
+	end
+
+	return _output
+end
+
+function syscmd(cmd, dest)
 	if (dest == nil) then dest=""
 	else
 		dest = " > " .. dest
 	end
-	return trim(shell_exec("lua /www/cgi-bin/sendmsg.lua \"" .. cmd .. "\" " .. dest))
+	return trim(shell_exec("lua /www/cgi-bin/syscmd.lua \"" .. cmd .. "\" " .. dest))
 end

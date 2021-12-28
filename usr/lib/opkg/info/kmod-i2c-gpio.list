@@ -1,0 +1,2 @@
+/lib/modules/4.4.14/i2c-gpio.ko
+/etc/modules.d/59-i2c-gpio

@@ -1,10 +1,10 @@
 Package: kmod-gpio-button-hotplug
 Version: 4.4.14-2
-Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3)
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156)
 Source: package/kernel/gpio-button-hotplug
 Section: kernel
 Architecture: ramips
-Installed-Size: 4568
+Installed-Size: 4569
 Description:  This is a replacement for the following in-kernel drivers:
  1) gpio_keys (KEYBOARD_GPIO)
  2) gpio_keys_polled (KEYBOARD_GPIO_POLLED)

@@ -7,8 +7,7 @@
 		},
 		"economy":{
 			"settings": {
-				"SET SETP": 18,
-				"SET RFAN": 0
+				"SET SETP": 18
 			}
 		},
 		"comfort":{
@@ -28,50 +27,35 @@
 			"start_time": "300",
 			"end_time": "1400",
 			"scenario": "economy",
-			"settings":{
-				"SET RFAN": 3,
-				"SET LFAN": 1
-			}
+			"settings":{}
 			}],
 		"1":[{
 			"id": 1,
 			"start_time": "300",
 			"end_time": "1400",
 			"scenario": "economy",
-			"settings":{
-				"SET RFAN": 3,
-				"SET LFAN": 1
-			}
+			"settings":{}
 			}],
 		"2":[{
 			"id": 1,
 			"start_time": "300",
 			"end_time": "1400",
 			"scenario": "economy",
-			"settings":{
-				"SET RFAN": 3,
-				"SET LFAN": 1
-			}
+			"settings":{}
 			}],
 		"3":[{
 			"id": 1,
 			"start_time": "300",
 			"end_time": "1400",
 			"scenario": "economy",
-			"settings":{
-				"SET RFAN": 3,
-				"SET LFAN": 1
-			}
+			"settings":{}
 			}],
 		"4":[{
 			"id": 1,
 			"start_time": "300",
 			"end_time": "1400",
 			"scenario": "economy",
-			"settings":{
-				"SET RFAN": 3,
-				"SET LFAN": 1
-			}
+			"settings":{}
 			}]
 	}
 }

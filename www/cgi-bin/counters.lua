@@ -1,4 +1,6 @@
-jdata = cjson.decode(sendmsg("GET CNTR"))
+local sendmsg = require "palazzetti.sendmsg"
+jdata = cjson.decode(sendmsg:execute{command="GET CNTR"})
+
 out = [[
 <script>
 	$(document).ready(function() {

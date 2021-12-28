@@ -1,10 +1,10 @@
 Package: kmod-nf-ipt6
 Version: 4.4.14-1
-Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3), kmod-nf-ipt, kmod-nf-conntrack6
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156), kmod-nf-ipt, kmod-nf-conntrack6
 Source: package/kernel/linux
 License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 7010
+Installed-Size: 7013
 Description:  Ip6tables core

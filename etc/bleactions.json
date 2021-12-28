@@ -1,0 +1,34 @@
+{
+	"SHAPE": ["TEMP","BATT"],
+	"SWEETSPOT": ["TEMP","BATT"],
+	"SHAPE_TEMP_36": {
+		"immediate": false,
+		"command": "EXT ADWR 209C [VALUE] 1 0",
+		"formula": "return 10*val"
+	},
+	"SWEETSPOT_TEMP_36": {
+		"immediate": false,
+		"command": "EXT ADWR 209C [VALUE] 1 0",
+		"formula": "return 10*val"
+	},
+	"SHAPE_TEMP_37": {
+		"immediate": false,
+		"command": "EXT ADWR 209E [VALUE] 1 0",
+		"formula": "return 10*val"
+	},
+	"SWEETSPOT_TEMP_37": {
+		"immediate": false,
+		"command": "EXT ADWR 209E [VALUE] 1 0",
+		"formula": "return 10*val"
+	},
+	"SHAPE_TEMP_38": {
+		"immediate": false,
+		"command": "EXT ADWR 20A0 [VALUE] 1 0",
+		"formula": "return 10*val"
+	},
+	"SWEETSPOT_TEMP_38": {
+		"immediate": false,
+		"command": "EXT ADWR 20A0 [VALUE] 1 0",
+		"formula": "return 10*val"
+	}
+}

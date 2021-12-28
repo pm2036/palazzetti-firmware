@@ -1,10 +1,10 @@
 Package: kmod-slhc
 Version: 4.4.14-1
-Depends: kernel (=4.4.14-1-6ba6b230d0b9feacd5fa4f773384f9b3), kmod-lib-crc-ccitt
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156), kmod-lib-crc-ccitt
 Source: package/kernel/linux
 License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 3324
+Installed-Size: 3325
 Description:  Serial Line Header Compression

@@ -1,0 +1,71 @@
+#!/bin/sh
+
+# known USB $PRODUCT legenda (USB to Serial product identifier):
+# 403/6001/500         M5StickC, M5Stack Atom
+# 10c4/ea60/100        ESP32, BioCC
+# 2341/43/1            Arduino
+# 403/6001/600         UCOM Atech
+
+logger -t DEBUG "hotplug USB: action='$ACTION' devname='$DEVNAME' devpath='$DEVPATH' devicename='$DEVICENAME' devnum='$DEVNUM' driver='$DRIVER' type='$TYPE' product='$PRODUCT' seqnum='$SEQNUM' busnum='$BUSNUM' major='$MAJOR' minor='$MINOR'"
+
+if [ "${ACTION}" = "add" ] || [ "${ACTION}" = "bind" ]; then
+    if [ "${DEVNAME}" = "" ] || [ "${DEVICENAME}" = "2-1" ]; then
+
+        logger -t DEBUG USB ADDED device
+        # rm -rf /tmp/isUARTBridge
+
+        RES=`lsusb -v`
+        DEV=""
+
+        if [ `echo "$RES" | grep bInterfaceClass | grep -v Hub | grep "CDC" | wc -l` -gt 0 ]; then
+            # CDC Device!
+            DEV="cdc"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep iProduct | grep -i "USB uart\|USB-Serial\|Serial" | wc -l` -gt 0 ]; then
+            # Serial device!
+            DEV="serial"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep iProduct | grep -i "Basic UART" | wc -l` -gt 0 ]; then
+            # Serial device!
+            DEV="serial_bridge"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep iProduct | grep -i "UART Bridge" | wc -l` -gt 0 ]; then
+            # Serial device!
+            DEV="serial_bridge"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep iProduct | grep -i "M5stack" | wc -l` -gt 0 ]; then
+            # Serial device!
+            DEV="serial_bridge"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep bInterfaceClass | grep -i "Mass Storage\|Disk" | wc -l`  -eq 1 ]; then
+            # Mass Storage Device!
+            DEV="msd"
+            logger -t DEBUG device $DEV!
+            # start automatically logger process!
+            logger -t DEBUG start automatically syslogger process
+            curl -sk http://localhost/cgi-bin/syscmd.lua?cmd=startlogger
+        else
+            # Unknown device
+            DEV="unknown"
+            logger -t DEBUG device $DEV!
+        fi
+
+
+        if [ $DEV = "serial" ]; then
+            #all others USB devices
+            logger -t DEBUG serial USB device
+        elif [ $DEV = "serial_bridge" ]; then    
+            #all others USB devices
+            logger -t DEBUG serial bridge USB device
+            # Write to semaphore file the path of device to read from
+            touch /tmp/isUARTBridge
+        fi
+    fi
+else
+        logger -t DEBUG REMOVED device
+
+        # kill logger process
+        kill `ps | grep [/etc/log]ger | awk '{print $1}' | head -n1`
+
+        rm -rf /tmp/isUARTBridge
+fi

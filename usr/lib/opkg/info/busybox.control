@@ -8,6 +8,6 @@ Section: base
 Essential: yes
 Maintainer: Felix Fietkau <nbd@nbd.name>
 Architecture: ramips
-Installed-Size: 203229
+Installed-Size: 211231
 Description:  The Swiss Army Knife of embedded Linux.
  It slices, it dices, it makes Julian Fries.

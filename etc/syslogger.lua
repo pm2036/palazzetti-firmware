@@ -1,6 +1,7 @@
 #!/usr/bin/lua
 
 dofile "/etc/main.lib.lua"
+local socket = require "socket"
 
 -- check if logger process is already running
 local PROCESSES=shell_exec("ps | grep [/etc/syslog]ger.lua | awk '{print $1}' | wc -l")

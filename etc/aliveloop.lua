@@ -3,6 +3,10 @@ dofile "/etc/main.lib.lua"
 dofile "/etc/param.lib.lua"
 dofile "/etc/timer.lib.lua"
 
+local sendmsg = require "palazzetti.sendmsg"
+local timer = require "palazzetti.timer"
+local utils = require "palazzetti.utils"
+
 CURRENT_BROKER = CBOXPARAMS["MQTT_BROKER"][1]
 ALIVELOOP_SAMPLETIME = tonumber(CBOXPARAMS["ALIVELOOP_SAMPLETIME"])
 
@@ -22,9 +26,9 @@ local isTrigger
 local APLCONN=0
 local ICONN=0
 
-if (fsize("/tmp/staticdata.json")==0) then os.exit() end
+-- if (fsize("/tmp/staticdata.json")==0) then os.exit() end
 -- update static
-sendmsg("GET STDT", "/dev/null")
+sendmsg:execute{command="GET STDT",dest="/dev/null"}
 
 function checkClock(jdata)
 
@@ -60,9 +64,9 @@ function checkClock(jdata)
 
 	-- internet connected
 	if (ICONN == 1) then
-		if (isTimerSyncClockFeatureEnabled() and (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16))) then
+		if (timer:enabled_clock() and (os.date("%Y-%m-%d %H:%M") ~= jdata["APLTS"]:sub(1,16))) then
 			syslogger("CLOCK", "Syncronize CBOX->APPLIANCE")
-			sendmsg("SET TIME")
+			sendmsg:execute{command="SET TIME"}
 		end
 	-- internet not connected
 	else		
@@ -87,8 +91,13 @@ while true do
 	end
 
 	while(retry > 0) do
-		sendmsg("GET ALLS", "/tmp/alivedata.json")
-		jdata = cjson.decode(readfile("/tmp/alivedata.json"))
+		local _commandResult, _commandData = pcall(cjson.decode, sendmsg:execute{command="GET ALLS"})
+
+		if ((_commandResult == true) and (_commandData ~= nil) and (_commandData["SUCCESS"] == true)) then
+			writeinfile("/tmp/alivedata.json", cjson.encode(_commandData))
+		end
+
+		jdata = _commandData
 		retry = ((jdata["DATA"]~=nil) and (jdata["SUCCESS"]~=nil) and (jdata["SUCCESS"] ~= false)) and -1 or retry - 1
 		if (retry~=-1) then sleep(5) end
 	end
@@ -102,13 +111,16 @@ while true do
 		break
 	end
 	-- If handshake is still running, there could be case that appliance connected status is not reliable
-	-- in that case, proceed by udpate the flag and reload static data about appliance
-	if tonumber(trim(shell_exec("cat /tmp/staticdata.json | grep -c \"\\\"APLCONN\\\":0\"")))==1 then
+	-- in that case, proceed by udpate the flag
+	if 	((tonumber(trim(shell_exec("cat /tmp/staticdata.json | grep -c \"\\\"APLCONN\\\":0\"")))==1) or
+		((tonumber(trim(shell_exec("cat /tmp/staticdata.json | grep -c \\\"APLCONN\\\"")))==0))) then
 		-- Ensure that, when connection with asset is UP, status is updated on static data
 		-- This will ensure that cloud would be notified about those changes
 		mutex(function() exec("sed -i -e 's/\"APLCONN\":0/\"APLCONN\":1/g' /tmp/staticdata.json") end, "/tmp/lockjstatic")
-		sendmsg("GET STDT", "/dev/null")
 	end
+
+	-- Reload static data about appliance
+	sendmsg:execute{command="GET STDT",dest="/dev/null"}
 
 	if tonumber(trim(shell_exec("cat /tmp/staticdata.json | grep -c \"\\\"ICONN\\\":0\"")))==1 then
 		ICONN=0

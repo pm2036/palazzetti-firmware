@@ -8,5 +8,5 @@ logger "$BUTTON pressed for $SEEN seconds"
 
 if [ "$SEEN" -ge 1 ]
 then
-	ash /etc/resetall.sh
+	lua /etc/resetall.lua &
 fi

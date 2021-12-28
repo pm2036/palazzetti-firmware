@@ -7,6 +7,9 @@ dofile "/etc/main.lib.lua"
 dofile "/etc/param.lib.lua"
 cjson = require "cjson"
 
+local network = require "palazzetti.network"
+local syscmd = require "palazzetti.syscmd"
+
 local MYETH0="eth0"
 local WLAN0_MODE=""
 local WLAN0_ISDISABLE=""
@@ -19,7 +22,6 @@ local FIRSTINTERNETCHECK=false
 local STDTINFOMD5=nil
 local NOTIFYSTANDARDINFO=false
 local PID
-local IMGFILE
 local WIFILINK=0
 
 local MYBOARD=trim(shell_exec("ash /etc/myboard.sh"))
@@ -64,15 +66,24 @@ if FIRSTBOOT==1 then
 	end
 
 	-- Set Wi-Fi to default mode only if upgrade configuration is missing
-	if (file_exists("/etc/upgrade_config.sh") == false) then
-		os.execute("ash /etc/setwifi.sh default")
+	if (file_exists("/etc/network_config") == false) then
+		network:wifi_default(true)
 	end
 
-	os.execute("cat /etc/macaddr > /etc/appliancelabel")
+	-- Set Eth to default mode only if upgrade configuration is missing
+	if (file_exists("/etc/network_config") == false) then
+		network:eth_dhcp()
+	end
+
+	-- If label is not missing, keep it as is
+	if ((file_exists("/etc/appliancelabel") ~= true) or (fsize("/etc/appliancelabel") <= 0)) then
+		os.execute("cat /etc/macaddr > /etc/appliancelabel")
+	end
+
 	os.execute("echo 0 > /sys/bus/usb/devices/usb1/authorized && echo 1 > /sys/bus/usb/devices/usb1/authorized")
 end
 
-if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config.sh")>0) then
+if (file_exists("/etc/network_config")==true) and (fsize("/etc/network_config")>0) then
 
 	syslogger(DEBUG, "FIRSTBOOT. Restore previous configurations..")
 	-- Make led blinking
@@ -80,16 +91,22 @@ if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config
 	os.execute("swconfig dev rt305x set apply")
 
 	-- Set executable permission on restore configuration file
-	os.execute("chmod +x /etc/upgrade_config.sh")
+	-- os.execute("chmod +x /etc/upgrade_config.sh")
 
 	-- Wait 5 seconds for services boot
 	sleep(5)
 
+	-- Restore network configuration
+	pcall(cjson.decode, syscmd:execute{command="netrestore"})
+
+	-- Clear network restore configuration
+	os.execute("rm -f /etc/network_config")
+
 	-- Execute the configuration restore
-	os.execute("ash /etc/upgrade_config.sh")
+	-- os.execute("ash /etc/upgrade_config.sh")
 
 	-- Clear the upgrade configuration
-	os.execute("rm -f /etc/upgrade_config.sh")
+	-- os.execute("rm -f /etc/upgrade_config.sh")
 
 	-- If label is still empty
 	-- It couldn't be recovered
@@ -104,7 +121,7 @@ if (file_exists("/etc/upgrade_config.sh")==true) and (fsize("/etc/upgrade_config
 	CURRENT_WPROTO=trim(shell_exec("uci get network.wlan.proto"))
 
 	if ((CURRENT_WMODE ~= "ap" and CURRENT_WMODE ~= "sta") or (CURRENT_WPROTO ~= "static" and CURRENT_WPROTO ~= "dhcp")) then
-		os.execute("ash /etc/setwifi.sh default")
+		network:wifi_default()
 	end
 
 	-- Fire reboot
@@ -136,12 +153,6 @@ while 1 do
 		end
 	end
 
-	PID=trim(shell_exec("ps | grep [udp]svr.lua"))
-	if PID=="" then
-		print("Restart udpsvr!")
-		os.execute("lua /etc/udpsvr.lua &")
-	end
-
 	if CBOXPARAMS["MQTT_ENABLED"]==1 then
 
 		-- Ensure no zombie process alive
@@ -163,8 +174,32 @@ while 1 do
 
 	end
 
+	if CBOXPARAMS["BLELOOP_ENABLED"]==1 then
+
+		PID=trim(shell_exec("ps | grep [b]leloop.lua"))
+
+		if (PID=="" and file_exists("/tmp/isUARTBridge")==true) then
+		
+			os.execute("pkill -9 -f bleloop.lua 2> /dev/null")
+			print("Restart BLELOOP")
+			sleep(5)
+			os.execute("lua /etc/bleloop.lua &")
+	
+		elseif (PID~="" and file_exists("/tmp/isUARTBridge")==false) then
+			
+			os.execute("pkill -9 -f bleloop.lua 2> /dev/null")
+			
+		end
+	end
+
 	if CBOXPARAMS["ALIVELOOP_ENABLED"]==1 then
-		PID=trim(shell_exec("ps | grep [alive]loop.lua"))
+
+		if ((file_exists("/etc/timer_currentprg")==true) and (file_exists("/tmp/timer_currentprg")==false)) then
+			writeinfile("/tmp/timer_currentprg", readfile("/etc/timer_currentprg"))
+			-- print("ripristino il programma precedente")
+		end
+
+		PID=trim(shell_exec("ps | grep [a]liveloop.lua"))
 		if PID=="" then
 			print("Restart ALIVELOOP")
 			sleep(5)
@@ -189,14 +224,16 @@ while 1 do
 		os.execute("ifdown lan")
 		os.execute("/etc/init.d/network reload")
 		FIRSTINTERNETCHECK = false
-		os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+		-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
+		os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 	end
 
 	if ETHLINK=="up" and STATUS=="false" then
 		os.execute("ifup lan")
 		os.execute("/etc/init.d/network reload")
 		FIRSTINTERNETCHECK = false
-		os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+		-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
+		os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 	end
 
 	if ETHLINK=="up" and STATUS=="true" then
@@ -211,7 +248,8 @@ while 1 do
 		if trim(shell_exec("ifconfig wlan0 | grep \"inet addr\""))=="" then
 			-- restart wifi
 			syslogger(DEBUG, "restart wifi")
-			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+			-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
+			os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 			os.execute("wifi up")
 			sleep(3)
 			FIRSTINTERNETCHECK = false
@@ -226,7 +264,7 @@ while 1 do
 			-- if _wifigateway ~= nil or _wifigateway ~= "" then
 			-- 	if (tonumber(shell_exec("echo -n $(ping -c 5 -q -w 10 " .. _wifigateway .. " | grep -E -o '[0-9]+ packets received' | cut -f1 -d' ')")) <= 2) then
 			syslogger("DEBUG", "NO_PING_WIFIGATEWAY restart wifi")
-			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+			os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 			os.execute("wifi up")
 			sleep(3)
 			-- 	end
@@ -234,14 +272,19 @@ while 1 do
 		end
 	end
 
+	PID=trim(shell_exec("ps | grep [u]dpsvr.lua"))
+	if (PID~=nil and PID~="") then
+		if (trim(shell_exec("lua /etc/udpsvrchk.lua"))~="OK") then
+			-- os.execute("kill -9 `ps | grep [udpsvr].lua | awk '{print $1}'`")
+			os.execute("pkill -9 -f udpsvr.lua 2> /dev/null")
+			sleep(1)
+		end
+	end
 
-
-	-- check if there is image file to flash
-	IMGFILE=trim(shell_exec("find /tmp -name pl*.enc | head -1"))
-	if IMGFILE ~= "" then
-		-- flash new image file!
-		os.execute("ash /etc/sysdec.sh \"" .. IMGFILE .. " \"`basename " .. IMGFILE .. "`\" &")
-		os.exit()
+	PID=trim(shell_exec("ps | grep [u]dpsvr.lua"))
+	if PID=="" and WLAN0_MODE~="" then
+		print("Restart udpsvr!")
+		os.execute("sleep 2 && lua /etc/udpsvr.lua &")
 	end
 
 	if ((file_exists("/tmp/staticdata.json")==true) and (fsize("/tmp/staticdata.json") > 0)) then
@@ -282,7 +325,7 @@ while 1 do
 		if (NOTIFYSTANDARDINFO==false and FIRSTINTERNETCHECK==true) then
 			-- 1. Asset connect / disconnect
 			local static_data_flag, static_data = pcall(cjson.decode, readfile("/tmp/staticdata.json"))
-			if ((static_data_flag == true) and (static_data["DATA"] ~= nil)) then
+			if ((static_data_flag == true) and (static_data["DATA"] ~= nil) and (static_data["DATA"]["APLCONN"] ~= nil)) then
 
 				-- Prevent TS to be used as a comparison value
 				static_data["INFO"]["TS"] = "0"
@@ -299,7 +342,8 @@ while 1 do
 					vprint("Asset Data Changed")
 					vprint(STDTINFOMD5UPD)
 					-- Notify the standard informations only when there is a change on board connection
-					NOTIFYSTANDARDINFO = ((STDTINFOMD5 ~= nil) and true or false)
+					-- And board is connected
+					NOTIFYSTANDARDINFO = (((STDTINFOMD5 ~= nil) and (static_data["DATA"]["APLCONN"] == 1)) and true or false)
 					STDTINFOMD5 = STDTINFOMD5UPD
 				end
 

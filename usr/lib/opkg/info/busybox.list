@@ -15,6 +15,7 @@
 /usr/bin/md5sum
 /usr/bin/free
 /usr/sbin/ntpd
+/bin/stty
 /usr/bin/time
 /usr/bin/passwd
 /usr/bin/traceroute
@@ -24,6 +25,7 @@
 /bin/chown
 /etc/init.d/cron
 /bin/mount
+/usr/sbin/i2cget
 /bin/sync
 /usr/bin/dirname
 /sbin/hwclock
@@ -64,6 +66,9 @@
 /usr/bin/tail
 /usr/sbin/ntpd-hotplug
 /usr/bin/mkfifo
+/usr/bin/pkill
+/usr/sbin/i2cdump
+/usr/sbin/i2cdetect
 /bin/chgrp
 /bin/cp
 /sbin/poweroff
@@ -114,5 +119,6 @@
 /usr/bin/readlink
 /usr/bin/strings
 /bin/ps
+/usr/sbin/i2cset
 /usr/bin/xargs
 /bin/gzip

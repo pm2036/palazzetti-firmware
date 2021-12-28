@@ -55,6 +55,7 @@ $.syscmdJson = function(cmd) {
 		$.mobileLoadingShow(true);
 		var result = $.getJSON('syscmd.lua?cmd='+cmd)
 		.done(function(data) {
+
 			if (cmd=="wifiscan") {
 
 				// save wlist data
@@ -88,6 +89,143 @@ $.syscmdJson = function(cmd) {
 					$('#WENC').selectmenu("refresh");
 					$('#WCH').val(wlistmapping[$(this).attr("value")]['channel']);
 					$('#WCH').selectmenu("refresh");
+				});
+
+				return true;
+			}
+
+			if (cmd=="listbledev") {
+
+				// save wlist data
+				blelist = (data["DATA"]||[]);
+				blelistmapping = {}
+
+				$(".ble_data_entry").hide();
+
+				var _blelistype = {};
+				var _blelistypeenum = {
+					SWEETSPOT: "My Cli-Mate",
+					SHAPE: "Shape"
+				};
+				var _blelistvars = {
+					BATT: {label: "Battery", unit:"%"},
+					RSSI: {label: "Signal", unit:"dBm"},
+					TEMP: {label: "Temperature", unit:"°C"},
+					HUMI: {label: "Humidity", unit:"%"},
+					PRES: {label: "Pressure", unit:"mbar"},
+					ONLINE: {
+						label: "Status",
+						map: {
+							"true": "CONNECTED",
+							"false": "DISCONNECTED"
+						}
+					},
+					LOCATION: {
+						label: "Location",
+						map: {
+							"-1": "-",
+							"36": "MAIN",
+							"37": "LEFT",
+							"38": "RIGHT"
+						}
+					}
+				}
+
+				// refresh essid list
+				$('#BLE_LIST').empty();
+
+				if (!(blelist||[]).length) {
+					$('#BLE_LIST').append($("<li>No device available</li>"));
+					return;
+				}
+
+				blelist.forEach(function (valdata) {
+					var _currType = (valdata["TYPE"]||"").toLowerCase()
+
+					if (!_blelistype[_currType])
+						_blelistype[_currType] = {
+							label: (_blelistypeenum[_currType.toUpperCase()]||_currType.toUpperCase()), 
+							data:[]
+						};
+
+					_blelistype[_currType]["data"].push(valdata);
+					blelistmapping["" + valdata["MAC"]] = valdata
+				})
+
+				$.each(Object.keys(_blelistype).sort(), function(keydata, keyname) {
+
+					$('#BLE_LIST')
+						.append($("<li></li>")
+							.attr("data-role","list-divider")
+							.append(((_blelistype[keyname]||{}).label||""))
+							.append($("<span>" + (((_blelistype[keyname]||{}).data||[]).length||0) + "</span>")
+								.addClass("ui-li-count")));
+
+					((_blelistype[keyname]||{}).data||[]).sort(function(a, b) {
+						return (a["MAC"]||"").localeCompare(b["MAC"]||"");
+					}).forEach(function(valdata) {
+
+						var _currElement = $("<a></a>")
+							.append($("<h2>" + valdata["MAC"].toUpperCase() + "</h2>"));
+
+						let valkeys = (Object.keys(valdata)||[]);
+
+						(valkeys||[]).sort().forEach(function(_currKey) {
+							var _lvar = (_blelistvars[_currKey]||"");
+							var _label = (_lvar.label || _lvar);
+							var _unit = (_lvar.unit || "");
+							var _lval = valdata[_currKey];
+
+							if (typeof(_lvar.map) == "object")
+								_lval = (_lvar.map[""+_lval]||"");
+
+							if (!(_label||"").length) return;
+
+							_currElement
+								.append($("<p>" + _label + ": <strong>" + _lval + (_unit||"") + "</strong></p>"));
+						});
+
+						$('#BLE_LIST').append($("<li></li>")
+							.attr("value", valdata["MAC"])
+							.append(_currElement));
+					});
+				});
+				$('#BLE_LIST').listview("refresh");
+
+				$(".blelistview li").on("click", function() {
+
+					var _currMac = ((blelistmapping[$(this).attr("value")]||{})['MAC']||"");
+					var _currType = ((blelistmapping[$(this).attr("value")]||{})['TYPE']||"");
+					var _currLocation = ((blelistmapping[$(this).attr("value")]||{})['LOCATION']||"");
+
+					if (!(_currMac||"").length) return;
+					
+					$(".ble_data_entry").show();
+
+					$("#BLOCATION").empty();
+					$("#BLOCATION").append($("<option></option>")
+						.attr("value", "-1")
+						.append(_blelistvars.LOCATION.map["-1"]));					
+
+					Object.keys(_blelistvars.LOCATION.map).forEach(function (_currKey) {
+
+						if(!(_currType.toLowerCase() == "sweetspot"))
+							return;
+						if(!(_currKey!="-1"))
+							return;
+
+						$("#BLOCATION").append($("<option></option>")
+							.attr("value", _currKey)
+							.append(_blelistvars.LOCATION.map[_currKey]));
+					});
+
+					$('#BMAC').val(_currMac);
+					$('#BLOCATION').val(_currLocation);
+					$('#BLOCATION').selectmenu("refresh");
+
+					$('#maincontent').animate({
+						scrollTop: $("#maincontent").height()
+					}, 200);
 				});
 
 				return true;
@@ -175,7 +313,7 @@ $.loadmaincontent = function(href) {
 $(document).on("pagecreate", "#mainpage", function() {
 
 	$.getJSON( "syscmd.lua?cmd=getparams", function(data) {
-		cboxparams = data;
+		cboxparams = data["DATA"];
 	})
 
     $(document).on("swipeleft swiperight", "#mainpage", function(e) {
@@ -402,7 +540,7 @@ $.initWifi = function() {
 	mainpage = "wifi";
 	$.globalInit();
 
-	$.syscmdJson('nwdata');
+	$.syscmdJson('netdata');
 
 	$("#frmSETwifi").submit(function() {
 
@@ -443,7 +581,7 @@ $.initWifi = function() {
 			return false;
 		}
 
-		if ((($('#WSSID').val().length<1) ||($('#WSSID').val().length>32)) && ($('#WMODE').val()!='off') && ($('#WMODE').val()!='default')) {
+		if ((($('#WSSID').val().length<1) ||($('#WSSID').val().length>64)) && ($('#WMODE').val()!='off') && ($('#WMODE').val()!='default')) {
 			alert('Not valid SSID!');
 			return false;
 		}
@@ -508,6 +646,77 @@ $.initWifi = function() {
 	});
 }
 
+$.initBle = function() {
+
+	mainpage = "ble";
+	$.globalInit();
+
+	$.syscmdJson('listbledev');
+
+	$("#btBleDelete").on("click", function(e) {
+		e.preventDefault();
+
+		var _currMac = $("#frmSETble input[name=MAC]").val()
+		if (!(_currMac||"").length) return;
+
+		var postData = $("#frmSETble").serializeArray();
+		var formURL = $(this).attr("formaction");
+
+		if (!confirm("Note: you will delete selected device.\n\nProceed?"))
+			return false;
+
+		$.mobileLoadingShow(true);
+		$.ajax({
+			url : formURL,
+			type: "POST",
+			data : postData,
+			dataType: 'json'
+		})
+		.done(function(data, textStatus, jqXHR) {
+			$('#maincontent').load(mainpage+".lua");
+		})
+		.error(function(jqXHR, textStatus, errorThrown) {
+			alert("Network error. Please try to reload");
+		})
+		.always(function() {
+			$.mobileLoadingShow(false);
+		});
+
+		return false;
+	});
+
+	$("#frmSETble").submit(function() {
+
+		var _currMac = $("#frmSETble input[name=MAC]").val()
+		if (!(_currMac||"").length) return;
+
+		var postData = $(this).serializeArray();
+		var formURL = $(this).attr("action");
+
+		if (formURL.includes("delbledev") && !confirm("Note: you will delete selected device.\n\nProceed?"))
+			return false;
+
+		$.mobileLoadingShow(true);
+		$.ajax({
+			url : formURL,
+			type: "POST",
+			data : postData,
+			dataType: 'json'
+		})
+		.done(function(data, textStatus, jqXHR) {
+			$('#maincontent').load(mainpage+".lua");
+		})
+		.error(function(jqXHR, textStatus, errorThrown) {
+			alert("Network error. Please try to reload");
+		})
+		.always(function() {
+			$.mobileLoadingShow(false);
+		});
+
+		return false;
+	});
+}
+
 $.initEthProto = function(val) {
 	if (val == 'static') {
 		$('#ETH0_STATIC_DATA').show();
@@ -520,7 +729,7 @@ $.initEth = function() {
 	mainpage = "eth";
 
 	$.globalInit();
-	$.syscmdJson('nwdata');
+	$.syscmdJson('netdata');
 
 	$('#EPR').change(function() {
 		$.initEthProto($(this).val());

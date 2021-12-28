@@ -1,5 +1,5 @@
 #!/usr/bin/lua
-require "socket"
+local socket = require "socket"
 dofile "/etc/maindef.lua"
 
 function readMTConnect()

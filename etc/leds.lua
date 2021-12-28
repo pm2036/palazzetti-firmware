@@ -38,7 +38,7 @@ pid = trim(string.sub(res, 1, i))
 
 -- print("pid " .. pid)
 
-f = io.popen("ps | grep [leds].lua  | awk '{print $1}'")
+f = io.popen("ps | grep leds.lua  | awk '{print $1}'")
 while true do
 	line = f:read()
 	if line == nil then break end

@@ -1,0 +1,10 @@
+Package: kmod-i2c-algo-bit
+Version: 4.4.14-1
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156), kmod-i2c-core
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips
+Installed-Size: 2629
+Description:  Kernel modules for I2C bit-banging interfaces

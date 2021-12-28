@@ -1,4 +1,5 @@
-json = cjson.decode(sendmsg("GET STDT"))
+local sendmsg = require "palazzetti.sendmsg"
+json = cjson.decode(sendmsg:execute{command="GET STDT"})
 jdata = json["DATA"]
 
 

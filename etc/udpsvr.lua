@@ -26,8 +26,11 @@ while running do
 				payload = readfile("/tmp/staticdata.json")
 				jdata = cjson.decode(payload)
 				jdata['INFO']['CMD'] = "DISCOVERY"
-				-- Added on bridge to be cross-compatible with GET STDT request
-				assert(udp:sendto(cjson.encode(jdata), msg_or_ip, port_or_nil))
+
+				if (jdata["DATA"]["APLCONN"] ~= nil) then
+					-- Added on bridge to be cross-compatible with GET STDT request
+					assert(udp:sendto(cjson.encode(jdata), msg_or_ip, port_or_nil))
+				end
 			end
 
 		elseif data == (CBOXPARAMS["BRANDPREFIX"] .. "bridge?GET ALLS") then

@@ -1,0 +1,2 @@
+/lib/modules/4.4.14/i2c-algo-bit.ko
+/etc/modules.d/55-i2c-algo-bit

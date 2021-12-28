@@ -1,42 +1,8 @@
 #!/usr/bin/lua
 
-cjson = require "cjson"
-
-function isTimerProductBurning(jtimer, jdata)
-	if (	-- In funzione
-			(tonumber(jdata["LSTATUS"])==6) or
-			-- In funzione – Modulazione
-			(tonumber(jdata["LSTATUS"])==7) or
-			-- Stand-By / Cool-Fluid
-			(tonumber(jdata["LSTATUS"])==9) or
-			-- Ecomode
-			(tonumber(jdata["LSTATUS"])==51) or
-			-- MF: In Funzione
-			(tonumber(jdata["LSTATUS"])==504) or
-			-- MF: Esaurimento Legna
-			(tonumber(jdata["LSTATUS"])==505) or
-			-- MF: Pulizia braciere
-			(tonumber(jdata["LSTATUS"])==509)
-		) then
-
-		return true
-	end
-
-	return false
-end
-
-function isTimerProductWaiting(jtimer, jdata)
-	if (	-- In funzione
-			(tonumber(jdata["LSTATUS"])==0) or
-			-- MF: Spento
-			(tonumber(jdata["LSTATUS"])==501)
-		) then
-
-		return true
-	end
-
-	return false
-end
+local cjson = require "cjson"
+local sendmsg = require "palazzetti.sendmsg"
+local timer = require "palazzetti.timer"
 
 function handleProgramNoMatch(jtimer, jdata, programID)
 	-- Program ID when timer send OFF
@@ -79,12 +45,12 @@ function handleProgramNoMatch(jtimer, jdata, programID)
 			(tonumber(jdata["LSTATUS"])==506) or
 			-- MF: Pulizia Braciere
 			(tonumber(jdata["LSTATUS"])==507) or
-			-- MF: Pulizia Braciere
+			-- MF: Passaggio a Pellet
 			(tonumber(jdata["LSTATUS"])==509)
 		) then
 
 		-- we have to switch OFF!
-		local _powerOffCommandResult, _powerOffCommandData = pcall(cjson.decode, sendmsg("CMD OFF"))
+		local _powerOffCommandResult, _powerOffCommandData = pcall(cjson.decode, sendmsg:execute{command="CMD OFF"})
 
 		if (
 			(_powerOffCommandResult ~= false) and
@@ -94,25 +60,11 @@ function handleProgramNoMatch(jtimer, jdata, programID)
 			(_powerOffCommandData["DATA"]~=nil)
 		) then
 			syslogger("TIMER", "CMD OFF")
-			writeinfile("/tmp/timer_currentprg", programID)
+			timer:checkpoint_set(programID)
 		else
 			syslogger("TIMER", "CMD OFF FAILED")
 		end
-
 	end
-
-end
-
-function isTimerEnabled()
-	if (file_exists("/tmp/timer.json")==false) then return false end
-	local jtimer = cjson.decode(readfile("/tmp/timer.json"))
-	return ((jtimer["enabled"] == true) and true or false)
-end
-
-function isTimerSyncClockFeatureEnabled()
-	if (file_exists("/tmp/timer.json")==false) then return false end
-	local jtimer = cjson.decode(readfile("/tmp/timer.json"))
-	return (((jtimer["sync_clock_enabled"] == nil) or (jtimer["sync_clock_enabled"] == true)) and true or false)
 end
 
 function checkTimer(jdata)
@@ -152,43 +104,18 @@ function checkTimer(jdata)
 
 	local myapplid = ((jstatic~=nil and jstatic["DATA"]~=nil and jstatic["DATA"]["SPLMIN"]~=nil) and (jstatic["DATA"]["SPLMIN"] .. "_" .. jstatic["DATA"]["SPLMAX"]) or "")
 
-		if ((jtimer["applid"] ~= myapplid) and (myapplid ~= "")) then
+		if ((jtimer["applid"] ~= myapplid) and (myapplid ~= "") or
+			(jtimer["scenarios"] == nil) or 
+			(jtimer["scenarios"]["comfort"] == nil) or
+			(jtimer["scenarios"]["comfort"]["settings"] == nil)) then
 
 			syslogger("TIMER", "Reset Appliance Identifier: " .. myapplid)
 
-			-- need to reset the timer!!
+			jtimer = timer:init(jtimer,jstatic)
+
 			if (jtimer == nil) then
-				jtimer = {}
+				return false
 			end
-
-			jtimer["applid"] = myapplid
-			jtimer["enabled"] = false
-
-			-- jtimer["sync_clock_enabled"] = true
-			jtimer["ecostart_mode_enabled"] = false
-
-			jtimer["scenarios"] = {}
-			jtimer["scenarios"]["comfort"] = {}
-			jtimer["scenarios"]["economy"] = {}
-			jtimer["scenarios"]["warm"] = {}
-			jtimer["scenarios"]["off"] = {}
-
-			jtimer["scenarios"]["comfort"]["settings"] = {}
-			jtimer["scenarios"]["economy"]["settings"] = {}
-			jtimer["scenarios"]["warm"]["settings"] = {}
-			jtimer["scenarios"]["off"]["settings"] = {}
-
-			-- Don't check SPLMAX and SPLMIN because we assume that condition is already satisfied by myapplid empty check
-
-			local newsetpoint = math.floor((tonumber(jstatic["DATA"]["SPLMAX"]) + tonumber(jstatic["DATA"]["SPLMIN"]))/2)
-			jtimer["scenarios"]["comfort"]["settings"]["SET SETP"] = newsetpoint
-			jtimer["scenarios"]["economy"]["settings"]["SET SETP"] = newsetpoint
-			jtimer["scenarios"]["warm"]["settings"]["SET SETP"] = newsetpoint
-			-- jtimer["scenarios"]["off"]["settings"]["CMD"] = "OFF"
-
-			-- Do not reset scheduler choosen by user
-			-- jtimer["scheduler"] = {}
-			jtimer["off_when_nomatch"] = true
 
 			os.execute("rm -f /tmp/timer.json")
 			writeinfile("/etc/timer.json", cjson.encode(jtimer))
@@ -203,12 +130,12 @@ function checkTimer(jdata)
 		if ((jdata["CHRSTATUS"]~=nil) and (jdata["CHRSTATUS"] ~= 0)) then
 			-- check inside jdata for chrono key
 			syslogger("TIMER", "SET CSST 0")
-			sendmsg("SET CSST 0")
+			sendmsg:execute{command="SET CSST 0"}
 		end
 
 		-- Se il timer è abilitato e non esiste alcuna programmazione per la giornata attuale
 		if (jtimer["scheduler"][tostring(currentWDAY)]==nil) then
-			handleProgramNoMatch(jtimer, jdata)
+			handleProgramNoMatch(jtimer, jdata, nil)
 			return
 		end
 
@@ -237,7 +164,37 @@ function checkTimer(jdata)
 				-- check if program is already applied
 				if (currentScenario["settings"]["SET SETP"]==nil) then currentScenario["settings"]["SET SETP"] = "" end
 				programID = tostring(currentWDAY) .. "_" .. currentProgram["start_time"] .. "_" .. currentProgram["scenario"] .. "_" .. currentScenario["settings"]["SET SETP"]
-				if (programID == readfile("/tmp/timer_currentprg")) then break end
+				
+				-- Il programID calcolato è uguale a quello già applicato
+				-- Non proseguire oltre
+				if (programID == readfile("/tmp/timer_currentprg")) then 
+					-- print("timer have been previously applied")
+					return
+				end
+
+				-- Attendi 5 secondi prima di effettuare la lettura di verifica dell'orario
+				sleep(5)
+
+				local _checkDateTimeCommandResult, _checkDateTimeCommandData = pcall(cjson.decode, sendmsg:execute{command="GET TIME"})
+
+				if ((_checkDateTimeCommandResult == true) and (_checkDateTimeCommandData ~= nil) and (_checkDateTimeCommandData["DATA"] ~= nil)) then 
+
+					-- print(cjson.encode(_checkDateTimeCommandData))
+					-- print(_checkDateTimeCommandData["DATA"]["STOVE_WDAY"])
+					-- print(_checkDateTimeCommandData["DATA"]["STOVE_DATETIME"])
+
+					local checkDateTime_currWeekday = (tonumber(_checkDateTimeCommandData["DATA"]["STOVE_WDAY"]) - 1)
+					local checkDateTime_currMinutes = tonumber(getMinutes(_checkDateTimeCommandData["DATA"]["STOVE_DATETIME"]))
+					-- Ultima data letta per convalida - Data letta in precedenza
+					local checkDateTime_validateRange = ((checkDateTime_currWeekday * 24 * 60) + checkDateTime_currMinutes) - ((currentWDAY * 24 * 60) + currentMinutes)
+
+					-- La lettura della data è errata se il DELTA tra la data letta e quella in input NON è compreso tra 0 e 2 minuti
+					if (checkDateTime_validateRange < 0 or checkDateTime_validateRange > 2) then return end
+				else
+					-- La lettura della data per la convalida del timeframe è fallita
+					-- Pertanto non si può procedere con le operazioni
+					return
+				end
 
 				-- ####################
 				-- execute all settings
@@ -247,13 +204,9 @@ function checkTimer(jdata)
 					local applycmd = false
 					cmd = k .. " " .. commands[k]
 					if (k == "SET SETP") then
-						if ((jdata["SETP"]~=nil) and (jdata["SETP"] ~= commands[k])) then
 						applycmd = true
-						end
 					elseif (k == "SET RFAN") then
-						if ((jdata["F2L"]~=nil) and (jdata["F2L"] ~= commands[k])) then
 						applycmd = true
-						end
 					end
 
 					-- If command has been applied
@@ -265,7 +218,7 @@ function checkTimer(jdata)
 					if (applycmd==true) then
 						applied_commands["" .. k] = programID
 						syslogger("TIMER", cmd)
-						sendmsg(cmd)
+						sendmsg:execute{command=cmd}
 					end
 				end
 
@@ -274,47 +227,30 @@ function checkTimer(jdata)
 					-- Force off depending on status
 					handleProgramNoMatch(jtimer, jdata, programID)
 				-- Else if product could be switched on
-				elseif (isTimerProductWaiting(jtimer, jdata) or isTimerProductBurning(jtimer, jdata)) then
+				elseif (timer:product_waiting(jtimer, jdata) or timer:product_burning(jtimer, jdata)) then
 
-					local maintemp = "T" .. tostring(tonumber(jstatic["DATA"]["MAINTPROBE"])+1)
+					-- we have to switch ON!
+					if (timer:product_waiting(jtimer, jdata) == true) then
+						local _powerOnCommandResult, _powerOnCommandData = pcall(cjson.decode, sendmsg:execute{command="CMD ON"})
 
-					if ((
-						-- Se la modalità Eco-start è impostata e ci sono i presupposti per accendere
-						(jtimer["ecostart_mode_enabled"] ~= nil) and
-						(jtimer["ecostart_mode_enabled"] == true) and
-						(tonumber(jdata[maintemp])<tonumber(commands["SET SETP"]))
-					) or (
-						-- Oppure se la modalità Eco-start non è impostata
-						(jtimer["ecostart_mode_enabled"] == nil) or
-						(jtimer["ecostart_mode_enabled"] == false)
-					) or (
-						-- Oppure se il prodotto è già in funzione
-						isTimerProductBurning(jtimer, jdata) == true
-					)) then
-
-						-- we have to switch ON!
-						if (isTimerProductWaiting(jtimer, jdata) == true) then
-							local _powerOnCommandResult, _powerOnCommandData = pcall(cjson.decode, sendmsg("CMD ON"))
-
-							if (
-								(_powerOnCommandResult ~= false) and
-								(_powerOnCommandData ~= nil) and
-								(_powerOnCommandData["INFO"] ~= nil) and
-								(_powerOnCommandData["INFO"]["RSP"] == "OK") and
-								(_powerOnCommandData["DATA"]~=nil) and
-								(_powerOnCommandData["DATA"]["STATUS"]>1)
-							) then
-								syslogger("TIMER", "CMD ON")
-								applied_commands["CMD ON"] = programID
-								writeinfile("/tmp/timer_currentprg", programID)
-							else
-								syslogger("TIMER", "CMD ON FAILED")
-							end
-						else
+						if (
+							(_powerOnCommandResult ~= false) and
+							(_powerOnCommandData ~= nil) and
+							(_powerOnCommandData["INFO"] ~= nil) and
+							(_powerOnCommandData["INFO"]["RSP"] == "OK") and
+							(_powerOnCommandData["DATA"]~=nil) and
+							(_powerOnCommandData["DATA"]["STATUS"]>1)
+						) then
 							syslogger("TIMER", "CMD ON")
 							applied_commands["CMD ON"] = programID
-							writeinfile("/tmp/timer_currentprg", programID)
+							timer:checkpoint_set(programID)
+						else
+							syslogger("TIMER", "CMD ON FAILED")
 						end
+					else
+						syslogger("TIMER", "CMD ON")
+						applied_commands["CMD ON"] = programID
+						timer:checkpoint_set(programID)
 					end
 				end
 
@@ -323,6 +259,8 @@ function checkTimer(jdata)
 			end
 		end
 
-		if (program_match==false) then handleProgramNoMatch(jtimer, jdata) end
+		if (program_match==false) then 
+			handleProgramNoMatch(jtimer, jdata, nil)
+		end
 
 end

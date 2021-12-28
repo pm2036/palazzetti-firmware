@@ -14,12 +14,12 @@ config dnsmasq
 	option leasefile '/tmp/dhcp.leases'
 	option resolvfile '/tmp/resolv.conf.auto'
 	option cachelocal '0'
-	option port '0'
+	option port '53'
 
 config dhcp 'wlan'
 	option interface 'wlan'
 	option start '100'
-	option limit '5'
+	option limit '100'
 	option leasetime '24h'
 	option ignore '0'
 

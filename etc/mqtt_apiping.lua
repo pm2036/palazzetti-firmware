@@ -25,7 +25,7 @@ end
 while 1 do
 
 	sleep(DELAY)
-	output = shell_exec("curl -s --cacert /etc/cacerts.pem --header \"x-api-key: " .. API_KEY .. "\" " .. API_ENDPOINT .. MAC .. "")
+	output = shell_exec("curl -s --cacert /etc/cacerts.pem --header \"x-api-key: " .. API_KEY .. "\" " .. API_ENDPOINT .. "/thing/" .. MAC .. "")
 	if (output:len()>0) then
 		jsonrsp = cjson.decode(output)
 
@@ -44,7 +44,8 @@ while 1 do
 				-- Cleanup Enrollment files
 				os.execute("rm -rf aws-*")
 				-- Let the plzwatchdog Restart MQTT services
-				os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+				-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
+				os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 			end
 
 		else
@@ -52,7 +53,8 @@ while 1 do
 			print ("THING DISCONNECTED")
 			syslogger("APIPING", "THING DISCONNECTED")
 			-- Restart MQTT channels
-			os.execute("kill -9 `ps | grep [mqtt].lua | awk '{print $1}'`")
+			-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
+			os.execute("pkill -9 -f \"[m]qtt.*lua\"")
 		end
 	else
 		print("apiping: offline")

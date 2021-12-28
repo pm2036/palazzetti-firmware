@@ -1,0 +1,24 @@
+#!/bin/sh
+
+logger -t DEBUG "hotplug TTY: action='$ACTION' devname='$DEVNAME' devpath='$DEVPATH' devicename='$DEVICENAME' devnum='$DEVNUM' driver='$DRIVER' type='$TYPE' product='$PRODUCT' seqnum='$SEQNUM' busnum='$BUSNUM' major='$MAJOR' minor='$MINOR'"
+
+if [ "${DEVNAME:0:6}" = "ttyUSB" ]; then
+
+    if [ "${ACTION}" = "add" ] || [ "${ACTION}" = "bind" ]; then
+
+        logger -t DEBUG ADDED ONCE tty device
+        if [ -e "/tmp/isUARTBridge" ]; then
+            logger -t DEBUG File exists launching bleloop
+            pkill -9 -f bleloop.lua 2> /dev/null
+
+            echo -n /dev/$DEVNAME > /tmp/isUARTBridge
+            lua /etc/bleloop.lua &
+        fi
+    elif [ "${ACTION}" = "remove" ]; then
+        
+        rm -rf /tmp/isUARTBridge
+        rm -rf /tmp/devices
+        logger -t DEBUG REMOVED ONCE tty device
+    fi
+
+fi

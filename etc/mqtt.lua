@@ -3,6 +3,9 @@
 dofile "/etc/main.lib.lua"
 dofile "/etc/param.lib.lua"
 
+local sendmsg = require "palazzetti.sendmsg"
+local syscmd = require "palazzetti.syscmd"
+
 local f, f2, cmd, output, completecmd, fifoloop, startTime, filename, filename_hash
 
 local url
@@ -15,7 +18,7 @@ local OTAUPGRADE = false
 
 i=0
 -- reset all previous tasks
-os.execute("kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null")
+os.execute("pkill -9 -f mqtt_mainloop.lua 2> /dev/null")
 os.execute("killall -s 9 mosquitto_sub 2> /dev/null")
 os.execute("killall -s 9 mosquitto_pub 2> /dev/null")
 
@@ -168,7 +171,7 @@ while true do
 					-- Change keepalive SUBSCRIBER parameter
 					local keepalive = trim(string.sub(subcmd, string.len("KEPS ")))
 					writejsonpar("MQTT_KEEPALIVE_SUB", keepalive)
-					os.execute("kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null")
+					os.execute("pkill -9 -f mqtt_mainloop.lua 2> /dev/null")
 					output = getOKJson(completecmd)
 
 				elseif (checkCmd(subcmd,"KEPP")) then
@@ -176,7 +179,7 @@ while true do
 					-- Change keepalive PUBLISHER parameter
 					local keepalive = trim(string.sub(subcmd, string.len("KEPP ")))
 					writejsonpar("MQTT_KEEPALIVE_PUB", keepalive)
-					os.execute("kill -9 `pgrep -f mqtt_mainloop.lua` 2> /dev/null")
+					os.execute("pkill -9 -f mqtt_mainloop.lua 2> /dev/null")
 					output = getOKJson(completecmd)
 
 				elseif (checkCmd(subcmd,"REBT")) then
@@ -315,9 +318,7 @@ while true do
 					-- MQT SYSC
 					-- System commands
 
-					cmd = string.sub(subcmd, string.len("SYSC "))
-					syscmd = "lua /www/cgi-bin/syscmd.lua \"" .. trim(cmd) .. "\" 2>/dev/null"
-					output = shell_exec(syscmd)
+					output = syscmd:execute{command=trim(string.sub(subcmd, string.len("SYSC ")))}
 
 				elseif (checkCmd(subcmd,"FTPC")) then
 					-- MQT FTPC
@@ -408,7 +409,7 @@ while true do
 				-- --------------------------------
 				-- stove commands
 				-- print("bridge command: " .. output)
-				sendmsg(completecmd, outputJsonFile)
+				sendmsg:execute{command=completecmd, dest=outputJsonFile}
 
 				if (string.upper(output)=="GET ALLS") then
 					-- if somebody asks for a "GET ALLS", reset logging loop timer

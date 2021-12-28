@@ -1,0 +1,10 @@
+Package: kmod-usb-serial-ch341
+Version: 4.4.14-1
+Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156), kmod-usb-serial
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips
+Installed-Size: 2745
+Description:  Kernel support for Winchiphead CH341 USB-to-Serial converters

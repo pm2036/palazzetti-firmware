@@ -6,6 +6,7 @@ out = [[
 		<li data-role="list-divider">Network settings</li>
 		<li><a data-rel="close" class="menulink" href="#wifi">Wifi</a></li>
 		<li><a data-rel="close" class="menulink" href="#eth">Ethernet</a></li>
+		<li><a data-rel="close" class="menulink" href="#ble">Accessories</a></li>
 	</ul>
 ]]
 
