@@ -44,7 +44,8 @@ if PID~="" then
 	print("BLELOOP_CRON is alive and should check device")
 
 	-- If keep alive file not found, kill BLE and remove flag
-	if (utils:file_exists("/tmp/devices/keepalive.json") == false) then
+	if ((utils:file_exists("/tmp/devices/keepalive.json") == false) 
+	and (utils:fage("/tmp/isUARTBridge") > (1 * 60))) then
 		utils:shell_exec("pgrep -f bleloop.lua | xargs kill -9")
 		utils:shell_exec("rm -f /tmp/isUARTBridge")
 	end

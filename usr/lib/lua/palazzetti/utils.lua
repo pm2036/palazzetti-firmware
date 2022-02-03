@@ -78,6 +78,14 @@ function utils:file_exists(name)
    if f~=nil then io.close(f) return true else return false end
 end
 
+function utils:fage(filepath)
+	if (self:file_exists(filepath) == false) then
+		return -1
+	end
+
+	return tonumber(self:shell_exec("echo -n $(($(date +%s) - $(date +%s -r \"" .. filepath .. "\")))"))
+end
+
 function utils:fsize (filepath)
 	local f = io.open(filepath,"r")
 	if f==nil then return -1 end

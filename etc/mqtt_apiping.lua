@@ -40,9 +40,10 @@ while 1 do
 
 			-- Check for eventually needs to perform another enrollment against IoT Platform
 			-- It could happened when there are policy changes or other similar stuff
+
 			if ((jsonrsp["DATA"]["MacAddress_NeedEnrollment"]~=nil) and (jsonrsp["DATA"]["MacAddress_NeedEnrollment"] == true)) then
 				-- Cleanup Enrollment files
-				os.execute("rm -rf aws-*")
+				os.execute("rm -rf /etc/aws-*")
 				-- Let the plzwatchdog Restart MQTT services
 				-- os.execute("kill -9 `ps | grep [m]qtt.lua | awk '{print $1}'`")
 				os.execute("pkill -9 -f \"[m]qtt.*lua\"")
