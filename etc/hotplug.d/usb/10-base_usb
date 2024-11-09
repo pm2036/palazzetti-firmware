@@ -1,10 +1,11 @@
 #!/bin/sh
 
 # known USB $PRODUCT legenda (USB to Serial product identifier):
-# 403/6001/500         M5StickC, M5Stack Atom
-# 10c4/ea60/100        ESP32, BioCC
-# 2341/43/1            Arduino
-# 403/6001/600         UCOM Atech
+# 10c4/ea60/100     ESP32, BioCC
+# 2341/43/1         Arduino
+# 403/6001/500      M5StickC, M5Stack Atom
+# 403/6001/600      UCOM Atech
+# 403/6015/1000     AirDongle 
 
 logger -t DEBUG "hotplug USB: action='$ACTION' devname='$DEVNAME' devpath='$DEVPATH' devicename='$DEVICENAME' devnum='$DEVNUM' driver='$DRIVER' type='$TYPE' product='$PRODUCT' seqnum='$SEQNUM' busnum='$BUSNUM' major='$MAJOR' minor='$MINOR'"
 
@@ -17,7 +18,16 @@ if [ "${ACTION}" = "add" ] || [ "${ACTION}" = "bind" ]; then
         RES=`lsusb -v`
         DEV=""
 
-        if [ `echo "$RES" | grep bInterfaceClass | grep -v Hub | grep "CDC" | wc -l` -gt 0 ]; then
+        # https://devicehunt.com/view/type/usb/vendor/0403#search-results-table
+        # iProduct[0] = 403 (FTDI)
+        # iProduct[1] = starts with 60 (Serial Converter UART)
+        if [ `echo $PRODUCT | cut -d "/" -f 1 | grep -i "403" | wc -l` -gt 0 ] && [ `echo $PRODUCT | cut -d "/" -f 2 | grep -i "^60" | wc -l` -gt 0 ]; then
+            DEV="serial_bridge"
+            logger -t DEBUG device $DEV!
+        elif [ `echo $PRODUCT | cut -d "/" -f 1 | grep -i "^483" | wc -l` -gt 0 ] && [ `echo $PRODUCT | cut -d "/" -f 2 | grep -i "5740" | wc -l` -gt 0 ]; then
+            DEV="serial"
+            logger -t DEBUG device $DEV!
+        elif [ `echo "$RES" | grep bInterfaceClass | grep -v Hub | grep "CDC" | wc -l` -gt 0 ]; then
             # CDC Device!
             DEV="cdc"
             logger -t DEBUG device $DEV!
@@ -33,7 +43,7 @@ if [ "${ACTION}" = "add" ] || [ "${ACTION}" = "bind" ]; then
             # Serial device!
             DEV="serial_bridge"
             logger -t DEBUG device $DEV!
-        elif [ `echo "$RES" | grep iProduct | grep -i "M5stack" | wc -l` -gt 0 ]; then
+        elif [ `echo "$RES" | grep idVendor | grep -i "WinChipHead" | wc -l` -gt 0 ]; then
             # Serial device!
             DEV="serial_bridge"
             logger -t DEBUG device $DEV!

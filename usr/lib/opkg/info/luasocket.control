@@ -1,5 +1,5 @@
 Package: luasocket
-Version: 2019-04-21-733af884-1
+Version: 3.1.0-2
 Depends: libc, lua
 Source: feeds/packages/lang/luasocket
 License: MIT
@@ -7,7 +7,7 @@ LicenseFiles: LICENSE
 Section: lang
 Maintainer: W. Michael Petullo <mike@flyn.org>
 Architecture: ramips
-Installed-Size: 52128
+Installed-Size: 62264
 Description:  LuaSocket is the most comprehensive networking support
  library for the Lua language. It provides easy access to
  TCP, UDP, DNS, SMTP, FTP, HTTP, MIME and much more.

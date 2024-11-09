@@ -1,5 +1,5 @@
 Package: libcares
-Version: 1.17.2-1
+Version: 1.33.1-1
 Depends: libc
 Source: feeds/packages/libs/c-ares
 License: MIT
@@ -7,7 +7,7 @@ LicenseFiles: LICENSE.md
 Section: libs
 Maintainer: Karl Palsson <karlp@etactica.com>
 Architecture: ramips
-Installed-Size: 30277
+Installed-Size: 66123
 Description:  c-ares is a C library for asynchronous DNS requests (including name resolves)
  
  C89 compatibility, MIT licensed, builds for and runs on POSIX, Windows,

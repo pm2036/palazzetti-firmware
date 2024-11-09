@@ -205,7 +205,15 @@ function checkTimer(jdata)
 					cmd = k .. " " .. commands[k]
 					if (k == "SET SETP") then
 						applycmd = true
+					elseif (k == "SET POWR") then
+						applycmd = true
 					elseif (k == "SET RFAN") then
+						applycmd = true
+					elseif (k == "SET FN3L") then
+						applycmd = true
+					elseif (k == "SET FN4L") then
+						applycmd = true
+					elseif (k == "SET SLNT") then
 						applycmd = true
 					end
 

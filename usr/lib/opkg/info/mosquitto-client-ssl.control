@@ -1,5 +1,5 @@
 Package: mosquitto-client-ssl
-Version: 2.0.11-1
+Version: 2.0.18-3
 Depends: libc, librt, libcares, cJSON, libmosquitto-ssl
 Provides: mosquitto-client
 Source: feeds/packages/net/mosquitto
@@ -9,7 +9,7 @@ Section: net
 Require-User: mosquitto=200:mosquitto=200
 Maintainer: Karl Palsson <karlp@etactica.com>
 Architecture: ramips
-Installed-Size: 49083
+Installed-Size: 51513
 Description:  Command line client tools for working with mosquitto.
  This includes mosquitto_sub, mosquitto_pub, mosquitto_rr
  and the mosquitto_ctrl tool.

@@ -1,4 +1,4 @@
-Package: kmod-usb-dwc2
+Package: kmod-usb-acm
 Version: 4.4.14-1
 Depends: kernel (=4.4.14-1-488744acba4c91477d73d884920f31c7), kmod-usb-core
 Source: package/kernel/linux
@@ -6,6 +6,5 @@ License: GPLv2
 Section: kernel
 Status: unknown hold not-installed
 Architecture: ramips
-Installed-Size: 29575
-Description:  This driver provides USB Device Controller support for the
- Synopsys DesignWare USB OTG Core
+Installed-Size: 8605
+Description:  Kernel support for USB ACM devices (modems/isdn controllers)

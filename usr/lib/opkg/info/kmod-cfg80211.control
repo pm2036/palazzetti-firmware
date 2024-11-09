@@ -1,6 +1,6 @@
 Package: kmod-cfg80211
 Version: 4.4.14+2016-05-12-1
-Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156), iw
+Depends: kernel (=4.4.14-1-488744acba4c91477d73d884920f31c7), iw
 Source: package/kernel/mac80211
 Section: kernel
 Maintainer: Felix Fietkau <nbd@nbd.name>

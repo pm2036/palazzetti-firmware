@@ -21,7 +21,6 @@
 /usr/libexec/login.sh
 /etc/init.d/bootcount
 /etc/config/system
-/etc/opkg/keys/c552058db3a3d8a9
 /etc/fstab
 /etc/sysctl.conf
 /sbin/sysupgrade
@@ -40,6 +39,7 @@
 /lib/preinit/80_mount_root
 /etc/rc.local
 /lib/functions/uci-defaults.sh
+/etc/opkg/keys/fe3ba0c378976033
 /etc/init.d/led
 /etc/init.d/gpio_switch
 /lib/functions/network.sh

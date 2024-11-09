@@ -410,8 +410,8 @@ function syscmd:setwifi(arg)
 					channel=arg.WCH,
 					protocol=arg.WPR,
 					ipaddr=arg.WADR,
-					netmask=arg.WGW,
-					gateway=arg.WMSK
+					netmask=arg.WMSK,
+					gateway=arg.WGW
 				}
 			and utils:getOKJson(mycmd) 
 			or 	utils:getERRORJson(mycmd, "Failed to put Wi-Fi on STA mode")

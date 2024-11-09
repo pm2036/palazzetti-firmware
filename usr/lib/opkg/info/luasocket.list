@@ -1,7 +1,7 @@
 /usr/lib/lua/ltn12.lua
 /usr/lib/lua/socket.lua
-/usr/lib/lua/socket-3.0-rc1.so
 /usr/lib/lua/mime/core.so
+/usr/lib/lua/socket-3.0.0.so
 /usr/lib/lua/socket/headers.lua
 /usr/lib/lua/socket/http.lua
 /usr/lib/lua/socket/smtp.lua
@@ -11,4 +11,5 @@
 /usr/lib/lua/mime-1.0.3.so
 /usr/lib/lua/mime.lua
 /usr/lib/lua/socket/core.so
+/usr/lib/lua/socket/serial.so
 /usr/lib/lua/socket/tp.lua

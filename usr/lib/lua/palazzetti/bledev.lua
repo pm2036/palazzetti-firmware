@@ -393,6 +393,18 @@ function bledev:upgrade()
 		-- os.exit()
 	end
 
+	-- Chunk size
+	local _serialPacketChunkSize = 8192
+	-- Read file size rounded to next thousand
+	local _updateBinaryChunkSize = (math.floor(_serialPacketChunkSize/1000)*1000)
+	-- Path to ESP32 Firmware
+	local _updateFilePath = (_upgradePayload["UPGRADE_PATH"] or "/tmp/firmware_esp.bin")
+	-- Check update firmware file size
+	local _updateBinarySize = utils:fsize(_updateFilePath)
+	-- Check number of packet that should be transfered for upgrade
+	local _updateBinaryTotalPacketNumber = math.ceil(_updateBinarySize / _updateBinaryChunkSize)
+	local _updateBinaryCurrentPacketNumber = 0
+
 	utils:init_serial(utils:getenvparams()["BLELOOP_DEVICE"], utils:getenvparams()["BLELOOP_BAUDRATE"])
 	-- Second parameter used as local flag instead of Baud Rate (setup by previous line)
 	utils:init_serial(utils:getenvparams()["BLELOOP_DEVICE"], "-echo")
@@ -408,17 +420,21 @@ function bledev:upgrade()
 		-- os.exit()
 	end
 
-	-- Chunk size
-	local _serialPacketChunkSize = 8192
-	-- Read file size rounded to next thousand
-	local _updateBinaryChunkSize = (math.floor(_serialPacketChunkSize/1000)*1000)
-	-- Path to ESP32 Firmware
-	local _updateFilePath = (_upgradePayload["UPGRADE_PATH"] or "/tmp/firmware_esp32.bin")
-	-- Check update firmware file size
-	local _updateBinarySize = utils:fsize(_updateFilePath)
-	-- Check number of packet that should be transfered for upgrade
-	local _updateBinaryTotalPacketNumber = math.ceil(_updateBinarySize / _updateBinaryChunkSize)
-	local _updateBinaryCurrentPacketNumber = 0
+	local _updateBinary = io.open(_updateFilePath, "r")
+	
+	if (_updateBinary == nil) then
+		utils:syslogger(DEBUG, "Failed to detect firmware file. Upgrade wont start")
+		print("Failed to detect firmware file. Upgrade wont start")
+
+		rserial:write(string.char(0x23))
+		rserial:flush()
+		socket.sleep(5)
+
+		-- Cleanup temporary files
+		self:upgrade_abort()
+
+		return utils:getERRORJson(mycmd, "Failed to detect firmware file. Upgrade wont start")
+	end
 
 	-- Temporary variable to store byte array
 	local _updatePacket = nil
@@ -449,14 +465,7 @@ function bledev:upgrade()
 	rserial:flush()
 	socket.sleep(5)
 
-	local _updateBinary = io.open(_updateFilePath, "r")
 	local _fbuffer = nil
-
-	if (_updateBinary == nil) then
-		utils:syslogger(DEBUG, "Failed to detect firmware file. Upgrade wont start")
-		print("Failed to detect firmware file. Upgrade wont start")
-		return utils:getERRORJson(mycmd, "Failed to detect firmware file. Upgrade wont start")
-	end
 
 	repeat
 

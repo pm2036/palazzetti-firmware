@@ -1,6 +1,6 @@
 Package: kmod-nf-ipt
 Version: 4.4.14-1
-Depends: kernel (=4.4.14-1-620dd0eb80618b57b2966228b0c20156)
+Depends: kernel (=4.4.14-1-488744acba4c91477d73d884920f31c7)
 Source: package/kernel/linux
 License: GPLv2
 Section: kernel
